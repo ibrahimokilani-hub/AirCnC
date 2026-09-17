@@ -1,0 +1,17 @@
+name: hotel-management-system-database-connection
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-server
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "1434:1433"
+    volumes:
+      - hotelbooking-sql-data:/var/opt/mssql
+
+volumes:
+  hotelbooking-sql-data:
