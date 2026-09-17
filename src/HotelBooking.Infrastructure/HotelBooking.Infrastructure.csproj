@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotelBooking.Contracts\HotelBooking.Contracts.csproj" />
+    <ProjectReference Include="..\HotelBooking.Core\HotelBooking.Core.csproj" />
+  </ItemGroup>
+
+</Project>
