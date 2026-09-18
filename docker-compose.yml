@@ -1,4 +1,4 @@
-name: hotel-management-system-database-connection
+name: hotel-management-system
 
 services:
   sqlserver:
