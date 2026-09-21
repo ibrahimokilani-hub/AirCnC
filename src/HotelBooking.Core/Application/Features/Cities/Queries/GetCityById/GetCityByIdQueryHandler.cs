@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Core.Application.Features.Cities.Queries.GetCityById;
 
-public class GetCityByIdQueryHandler(IAppDbContext context) : IQueryHandler<GetCityByIdQuery, CityResponse>
+public sealed class GetCityByIdQueryHandler(IAppDbContext context) : IQueryHandler<GetCityByIdQuery, CityResponse>
 {
     public async Task<Result<CityResponse>> HandleAsync(
         GetCityByIdQuery query,
