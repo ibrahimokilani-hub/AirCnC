@@ -1,3 +1,4 @@
+using HotelBooking.Contracts.Common;
 using HotelBooking.Core.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,20 +7,10 @@ namespace HotelBooking.Api.Controllers;
 [ApiController]
 public abstract class ApiController : ControllerBase
 {
+    protected IActionResult OkData<T>(T data) => Ok(new ApiResponse<T>(data));
+    
     protected IActionResult HandleFailure(Error error)
     {
-        if (error is ValidationError validationError)
-        {
-            var details = new ValidationProblemDetails(
-                validationError.Errors.ToDictionary(entry => entry.Key, entry => entry.Value))
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = error.Message
-            };
-
-            return BadRequest(details);
-        }
-
         var statusCode = error.Type switch
         {
             ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
@@ -30,7 +21,11 @@ public abstract class ApiController : ControllerBase
             _ => throw new ArgumentOutOfRangeException(
                 nameof(error), error.Type, "Unmapped error type.")
         };
+        
+        var body = error is ValidationError validationError
+            ? new ErrorResponse(statusCode, error.Message, validationError.Errors)
+            : new ErrorResponse(statusCode, error.Message);
 
-        return Problem(statusCode: statusCode, title: error.Code, detail: error.Message);
+        return StatusCode(statusCode, body);
     }
 }
