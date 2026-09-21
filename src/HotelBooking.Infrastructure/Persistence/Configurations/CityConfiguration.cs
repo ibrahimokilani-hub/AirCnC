@@ -14,16 +14,16 @@ public class CityConfiguration : IEntityTypeConfiguration<City>
 
         builder.Property(city => city.Name)
             .IsRequired()
-            .HasMaxLength(70);
+            .HasMaxLength(City.NameMaxLength);
         
         builder.Property(city => city.Country
             )
             .IsRequired()
-            .HasMaxLength(40);
+            .HasMaxLength(City.CountryMaxLength);
         
         builder.Property(city => city.PostOffice)
             .IsRequired()
-            .HasMaxLength(15);
+            .HasMaxLength(City.PostOfficeMaxLength);
         
         builder.HasIndex(city => new { city.Name, city.Country })
             .IsUnique();

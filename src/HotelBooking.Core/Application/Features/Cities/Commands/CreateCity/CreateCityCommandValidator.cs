@@ -6,16 +6,8 @@ public sealed class CreateCityCommandValidator : AbstractValidator<CreateCityCom
 {
     public CreateCityCommandValidator()
     {
-        RuleFor(command => command.Name)
-            .NotEmpty().WithMessage("City name is required.")
-            .MaximumLength(70);
-
-        RuleFor(command => command.Country)
-            .NotEmpty().WithMessage("Country name is required.")
-            .MaximumLength(40);
-
-        RuleFor(command => command.PostOffice)
-            .NotEmpty().WithMessage("Post office is required.")
-            .MaximumLength(15);
+        RuleFor(command => command.Name).ValidCityName();
+        RuleFor(command => command.Country).ValidCountry();
+        RuleFor(command => command.PostOffice).ValidPostOffice();
     }
 }

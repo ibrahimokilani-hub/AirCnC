@@ -7,6 +7,14 @@ namespace HotelBooking.Core;
 
 public static class DependencyInjection
 {
+    
+    public static readonly Type[] HandlerContracts = [
+        
+        typeof(ICommandHandler<>),
+        typeof(ICommandHandler<,>),
+        typeof(IQueryHandler<,>)
+    ];
+    
     public static IServiceCollection AddCore(this IServiceCollection services)
     {
         var assembly = typeof(DependencyInjection).Assembly;
@@ -21,11 +29,6 @@ public static class DependencyInjection
         this IServiceCollection services,
         Assembly assembly)
     {
-        var handlerContracts = new[]
-        {
-            typeof(ICommandHandler<,>),
-            typeof(IQueryHandler<,>)
-        };
 
         var implementations = assembly.GetTypes()
             .Where(t =>
@@ -39,7 +42,7 @@ public static class DependencyInjection
                 .GetInterfaces()
                 .Where(i =>
                     i.IsGenericType &&
-                    handlerContracts.Contains(i.GetGenericTypeDefinition()));
+                    HandlerContracts.Contains(i.GetGenericTypeDefinition()));
 
             foreach (var handlerInterface in handlerInterfaces)
             {

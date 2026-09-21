@@ -2,7 +2,18 @@ using HotelBooking.Core.Domain.Common;
 
 namespace HotelBooking.Core.Application.Abstractions.Messaging;
 
+// returns nothing
+public interface ICommand;
+
+// returns something
 public interface ICommand<TResponse>;
+
+
+public interface ICommandHandler<in TCommand>
+    where TCommand : ICommand
+{
+    Task<Result> HandleAsync(TCommand command, CancellationToken cancellationToken);
+}
 
 public interface ICommandHandler<in TCommand, TResponse>
     where TCommand : ICommand<TResponse>

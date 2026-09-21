@@ -4,6 +4,10 @@ namespace HotelBooking.Core.Domain.Entities;
 
 public class City : Entity
 {
+    public const int NameMaxLength = 70;
+    public const int CountryMaxLength = 40;
+    public const int PostOfficeMaxLength = 15;
+    
     private City(string name, string country, string postOffice)
     {
         Name = name;
