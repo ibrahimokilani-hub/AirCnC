@@ -1,4 +1,6 @@
-﻿using HotelBooking.Core.Application.Abstractions;
+﻿using System.Linq.Expressions;
+using HotelBooking.Core.Application.Abstractions;
+using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +14,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        
+        ApplySoftDeleteFilters(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
+    }
+    private static void ApplySoftDeleteFilters(ModelBuilder modelBuilder)
+    {
+        var softDeletableTypes = modelBuilder.Model.GetEntityTypes()
+            .Where(entityType => typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType));
+
+        foreach (var entityType in softDeletableTypes)
+        {
+            // Builds: (TEntity entity) => !entity.IsDeleted
+            var entity = Expression.Parameter(entityType.ClrType, "entity");
+            var isDeleted = Expression.Property(entity, nameof(ISoftDeletable.IsDeleted));
+            var filter = Expression.Lambda(Expression.Not(isDeleted), entity);
+
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
+        }
     }
 }

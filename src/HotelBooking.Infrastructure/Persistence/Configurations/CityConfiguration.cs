@@ -26,6 +26,7 @@ public class CityConfiguration : IEntityTypeConfiguration<City>
             .HasMaxLength(City.PostOfficeMaxLength);
         
         builder.HasIndex(city => new { city.Name, city.Country })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
     }
 }

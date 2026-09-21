@@ -2,7 +2,7 @@
 
 namespace HotelBooking.Core.Domain.Entities;
 
-public class City : Entity
+public class City : AuditableEntity
 {
     public const int NameMaxLength = 70;
     public const int CountryMaxLength = 40;

@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Infrastructure.Persistence;
+using HotelBooking.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,11 @@ public static class DependencyInjection
                                ?? throw new InvalidOperationException(
                                    "Connection string 'HotelBookingDb' is missing.");
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        // each request's context gets that request's interceptor and ICurrentUser
+        services.AddDbContext<AppDbContext>((provider, options) => options
+            .UseSqlServer(connectionString)
+            .AddInterceptors(provider.GetRequiredService<AuditingInterceptor>())
+        );
 
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
