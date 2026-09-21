@@ -5,6 +5,7 @@ using HotelBooking.Core.Application.Abstractions.Messaging;
 using HotelBooking.Core.Application.Features.Cities.Commands.CreateCity;
 using HotelBooking.Core.Application.Features.Cities.Commands.DeleteCity;
 using HotelBooking.Core.Application.Features.Cities.Commands.UpdateCity;
+using HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesGrid;
 using HotelBooking.Core.Application.Features.Cities.Queries.GetCityById;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,12 +14,35 @@ namespace HotelBooking.Api.Controllers.Admin;
 [Route("api/v1/admin/cities")]
 [Tags("Admin · Cities")]
 public sealed class CitiesController(
+    IQueryHandler<GetCitiesGridQuery, PagedResult<CityGridItem>> getCitiesGrid,
     ICommandHandler<CreateCityCommand, int> createCity,
     ICommandHandler<UpdateCityCommand> updateCity,
     ICommandHandler<DeleteCityCommand> deleteCity,
     IQueryHandler<GetCityByIdQuery, CityResponse> getCityById)
     : ApiController
 {
+    /// <summary>Gets a paginated list of cities.</summary>
+    /// <response code="200">The list of cities inside data, and the metadata inside meta.</response>
+    /// <response code="404">No city has that id.</response>
+    [HttpGet]
+    [ProducesResponseType<ApiResponse<PagedResponse<CityResponse>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetGrid([FromQuery] FilteredRequest request, CancellationToken cancellationToken)
+    {
+        var query = new GetCitiesGridQuery(
+            request.Page, 
+            request.PageSize, 
+            request.Search, 
+            request.SortBy, 
+            request.SortDirection);
+
+        var result = await getCitiesGrid.HandleAsync(query, cancellationToken);
+
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : OkPaged(result.Value);
+    }
+    
     /// <summary>Creates a city.</summary>
     /// <response code="201">The city was created. "data" holds its id.</response>
     /// <response code="400">The request failed validation.</response>

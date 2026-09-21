@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Api.ExceptionHandling;
+using HotelBooking.Api.Services;
 using HotelBooking.Core.Application.Abstractions;
 
 namespace HotelBooking.Api.Extensions;
@@ -16,7 +17,7 @@ public static class PresentationExtensions
       services.AddProblemDetails();
       
       services.AddHttpContextAccessor();
-      services.AddScoped<ICurrentUser, ICurrentUser>();
+      services.AddScoped<ICurrentUser, CurrentUser>();
       
       services.AddSwaggerDocumentation();
 

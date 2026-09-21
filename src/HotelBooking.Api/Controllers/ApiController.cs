@@ -5,9 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelBooking.Api.Controllers;
 
 [ApiController]
+[Produces("application/json")]
 public abstract class ApiController : ControllerBase
 {
     protected IActionResult OkData<T>(T data) => Ok(new ApiResponse<T>(data));
+    protected IActionResult OkPaged<T>(PagedResult<T> page) => 
+        Ok(new PagedResponse<T>(
+            page.Items,
+            new PageMeta(page.Page, page.PageSize, page.TotalCount, page.TotalPages)));
     
     protected IActionResult HandleFailure(Error error)
     {

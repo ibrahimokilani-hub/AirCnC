@@ -16,12 +16,14 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("HotelBookingDb")
                                ?? throw new InvalidOperationException(
                                    "Connection string 'HotelBookingDb' is missing.");
+        
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<AuditingInterceptor>();
 
         // each request's context gets that request's interceptor and ICurrentUser
         services.AddDbContext<AppDbContext>((provider, options) => options
             .UseSqlServer(connectionString)
-            .AddInterceptors(provider.GetRequiredService<AuditingInterceptor>())
-        );
+            .AddInterceptors(provider.GetRequiredService<AuditingInterceptor>()));
 
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
