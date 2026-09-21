@@ -6,33 +6,14 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.AddSerilogLogging();
 
-builder.Services
-    .AddControllers()
-    .AddErrorResponses();
-
-builder.Services.AddSwaggerDocumentation();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddCore();
-
+builder.Services.AddPresentation()
+                .AddInfrastructure(builder.Configuration)
+                .AddCore();
 
 var app = builder.Build();
 
-app.UseSerilogRequestLogging();
-app.UseErrorResponsesForEmptyStatusCodes();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerDocumentation();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+app.UseApiPipeline();
 
 app.Run();
