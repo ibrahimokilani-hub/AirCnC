@@ -1,4 +1,5 @@
 using HotelBooking.Api.Extensions;
+using HotelBooking.Core;
 using HotelBooking.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
