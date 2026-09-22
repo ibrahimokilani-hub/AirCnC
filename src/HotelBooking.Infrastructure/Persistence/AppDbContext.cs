@@ -2,17 +2,16 @@
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
-using HotelBooking.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>(options), IAppDbContext
+    : DbContext(options), IAppDbContext
 {
     public DbSet<City> Cities => Set<City>();
+
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

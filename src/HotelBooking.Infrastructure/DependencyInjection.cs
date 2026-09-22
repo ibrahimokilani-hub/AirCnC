@@ -1,9 +1,7 @@
 ﻿using HotelBooking.Core.Application.Abstractions;
-using HotelBooking.Core.Application.Features.Auth.Register;
-using HotelBooking.Infrastructure.Identity;
 using HotelBooking.Infrastructure.Persistence;
 using HotelBooking.Infrastructure.Persistence.Interceptors;
-using Microsoft.AspNetCore.Identity;
+using HotelBooking.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,25 +28,10 @@ public static class DependencyInjection
 
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
-        // Identity
-        services.AddIdentityServices();
+        // Stateless and thread-safe: one instance for the whole app.
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 
         return services;
     }
     
-    private static IServiceCollection AddIdentityServices(this IServiceCollection services)
-    {
-       services
-            .AddIdentityCore<ApplicationUser>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-                options.Password.RequiredLength = 8;
-            })
-            .AddRoles<IdentityRole<int>>()
-            .AddEntityFrameworkStores<AppDbContext>();
-
-        services.AddScoped<IIdentityService, IdentityService>();
-
-        return services;
-    }
 }
