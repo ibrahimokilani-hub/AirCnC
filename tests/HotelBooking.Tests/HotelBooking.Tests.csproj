@@ -14,7 +14,6 @@
     <PackageReference Include="NetArchTest.Rules" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Respawn" />
-    <PackageReference Include="Shouldly" />
     <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -22,7 +21,6 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Shouldly" />
   </ItemGroup>
 
   <ItemGroup>
