@@ -1,10 +1,13 @@
-﻿namespace HotelBooking.Api.Extensions;
+﻿using Microsoft.OpenApi;
+
+namespace HotelBooking.Api.Extensions;
 
 using System.Reflection;
 
 
 public static class SwaggerExtensions
 {
+    private const string BearerScheme = "Bearer";
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
@@ -17,6 +20,18 @@ public static class SwaggerExtensions
             {
                 options.IncludeXmlComments(xmlPath);
             }
+            options.AddSecurityDefinition(BearerScheme, new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "The accessToken from POST /api/v1/auth/login."
+            });
+
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference(BearerScheme, document)] = []
+            });
         });
 
         return services;
