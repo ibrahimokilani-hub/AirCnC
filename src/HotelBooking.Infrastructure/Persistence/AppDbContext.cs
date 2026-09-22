@@ -2,22 +2,25 @@
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
+using HotelBooking.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options)
-    : DbContext(options), IAppDbContext
+    : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>(options), IAppDbContext
 {
     public DbSet<City> Cities => Set<City>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
         
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         ApplySoftDeleteFilters(modelBuilder);
 
-        base.OnModelCreating(modelBuilder);
     }
     private static void ApplySoftDeleteFilters(ModelBuilder modelBuilder)
     {
