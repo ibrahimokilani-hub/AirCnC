@@ -7,11 +7,13 @@ using HotelBooking.Core.Application.Features.Cities.Commands.DeleteCity;
 using HotelBooking.Core.Application.Features.Cities.Commands.UpdateCity;
 using HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesGrid;
 using HotelBooking.Core.Application.Features.Cities.Queries.GetCityById;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelBooking.Api.Controllers.Admin;
 
 [Route("api/v1/admin/cities")]
+[Authorize]
 [Tags("Admin · Cities")]
 public sealed class CitiesController(
     IQueryHandler<GetCitiesGridQuery, PagedResult<CityGridItem>> getCitiesGrid,

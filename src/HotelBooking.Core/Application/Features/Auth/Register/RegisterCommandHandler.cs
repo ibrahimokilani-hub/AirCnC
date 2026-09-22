@@ -8,10 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Core.Application.Features.Auth.Register;
 
-/// <summary>
-/// A user is a row like any other: checked, created and saved through IAppDbContext,
-/// the same way a city is. The only special step is hashing the password first.
-/// </summary>
 public sealed class RegisterCommandHandler(
     IAppDbContext context,
     IPasswordHasher passwordHasher,
