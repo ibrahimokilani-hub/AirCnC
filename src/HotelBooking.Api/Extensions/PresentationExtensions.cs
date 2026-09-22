@@ -1,6 +1,7 @@
 ﻿using HotelBooking.Api.ExceptionHandling;
 using HotelBooking.Api.Services;
 using HotelBooking.Core.Application.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelBooking.Api.Extensions;
 
@@ -15,6 +16,11 @@ public static class PresentationExtensions
       services.AddExceptionHandler<GlobalExceptionHandler>();
       
       services.AddProblemDetails();
+      
+      services.AddAuthorizationBuilder()
+         .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build());
       
       services.AddHttpContextAccessor();
       services.AddScoped<ICurrentUser, CurrentUser>();

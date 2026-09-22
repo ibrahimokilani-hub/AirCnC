@@ -21,6 +21,7 @@ public sealed class AuthController(
     /// <response code="201">The account was created. "data" holds the user id</response>
     /// <response code="400">Invalid email, weak password, or a missing name</response>
     /// <response code="409">An account with this email already exists</response>
+    [AllowAnonymous]
     [HttpPost("register")]
     [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -39,6 +40,7 @@ public sealed class AuthController(
     /// <summary>Logs in</summary>
     /// <response code="200">Logged in successfully</response>
     /// <response code="401">Invalid email or password</response>
+    [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status401Unauthorized)]

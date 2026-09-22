@@ -7,13 +7,13 @@ using HotelBooking.Core.Application.Features.Cities.Commands.DeleteCity;
 using HotelBooking.Core.Application.Features.Cities.Commands.UpdateCity;
 using HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesGrid;
 using HotelBooking.Core.Application.Features.Cities.Queries.GetCityById;
+using HotelBooking.Core.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelBooking.Api.Controllers.Admin;
 
 [Route("api/v1/admin/cities")]
-[Authorize]
 [Tags("Admin · Cities")]
 public sealed class CitiesController(
     IQueryHandler<GetCitiesGridQuery, PagedResult<CityGridItem>> getCitiesGrid,
@@ -49,6 +49,7 @@ public sealed class CitiesController(
     /// <response code="201">The city was created. "data" holds its id.</response>
     /// <response code="400">The request failed validation.</response>
     /// <response code="409">A city with the same name and country already exists.</response>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPost]
     [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -92,6 +93,7 @@ public sealed class CitiesController(
     /// <response code="400">The request failed validation.</response>
     /// <response code="404">No city has that id.</response>
     /// <response code="409">Another city already has that name and country.</response>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPut("{id:int:min(1)}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -112,6 +114,7 @@ public sealed class CitiesController(
     /// <summary>Deletes a city. The row is kept and hidden (soft delete).</summary>
     /// <response code="204">The city was deleted.</response>
     /// <response code="404">No city has that id.</response>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpDelete("{id:int:min(1)}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
