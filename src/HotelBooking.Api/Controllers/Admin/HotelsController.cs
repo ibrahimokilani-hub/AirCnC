@@ -2,8 +2,10 @@
 using HotelBooking.Contracts.Hotels.Requests;
 using HotelBooking.Contracts.Hotels.Responses;
 using HotelBooking.Core.Application.Abstractions.Messaging;
+using HotelBooking.Core.Application.Features.Hotels.Commands.AddNearbyAttraction;
 using HotelBooking.Core.Application.Features.Hotels.Commands.CreateHotel;
 using HotelBooking.Core.Application.Features.Hotels.Commands.DeleteHotel;
+using HotelBooking.Core.Application.Features.Hotels.Commands.RemoveNearbyAttraction;
 using HotelBooking.Core.Application.Features.Hotels.Commands.SetHotelAmenities;
 using HotelBooking.Core.Application.Features.Hotels.Commands.UpdateHotel;
 using HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelById;
@@ -21,12 +23,15 @@ public sealed class HotelsController(
     ICommandHandler<UpdateHotelCommand> updateHotel,
     ICommandHandler<DeleteHotelCommand> deleteHotel,
     IQueryHandler<GetHotelByIdQuery, HotelResponse> getHotelById,
+    IQueryHandler<GetHotelsListQuery, PagedResult<HotelListItem>> getHotelsList,
     ICommandHandler<SetHotelAmenitiesCommand> setHotelAmenities,
-    IQueryHandler<GetHotelsListQuery, PagedResult<HotelListItem>> getHotelsList)
+    ICommandHandler<AddNearbyAttractionCommand, int> addNearbyAttraction,
+    ICommandHandler<RemoveNearbyAttractionCommand> removeNearbyAttraction)
     : ApiController
 {
     /// <summary>The admin grid: paged, searchable by name, owner or city, sortable.</summary>
     /// <remarks>sortBy: name (default), city, starRating, createdAt.</remarks>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpGet]
     [ProducesResponseType<PagedResponse<HotelListItem>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -92,6 +97,7 @@ public sealed class HotelsController(
     /// <response code="204">Saved.</response>
     /// <response code="400">An amenity id that doesn't exist.</response>
     /// <response code="404">No such hotel.</response>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPut("{id:int:min(1)}/amenities")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -103,6 +109,38 @@ public sealed class HotelsController(
     {
         var result = await setHotelAmenities.HandleAsync(
             new SetHotelAmenitiesCommand(id, request.AmenityIds),
+            cancellationToken);
+
+        return result.IsFailure ? HandleFailure(result.Error!) : NoContent();
+    }
+    
+    /// <summary>Adds a map pin. Its distance from the hotel is computed and stored.</summary>
+    [HttpPost("{id:int:min(1)}/attractions")]
+    [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddAttraction(
+        int id,
+        [FromBody] NearbyAttractionRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddNearbyAttractionCommand(id, request.Name, request.Category, request.Latitude, request.Longitude);
+
+        var result = await addNearbyAttraction.HandleAsync(command, cancellationToken);
+
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : StatusCode(StatusCodes.Status201Created, new ApiResponse<IdResponse>(new IdResponse(result.Value)));
+    }
+
+    /// <summary>Removes a map pin.</summary>
+    [HttpDelete("{id:int:min(1)}/attractions/{attractionId:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveAttraction(int id, int attractionId, CancellationToken cancellationToken)
+    {
+        var result = await removeNearbyAttraction.HandleAsync(
+            new RemoveNearbyAttractionCommand(id, attractionId),
             cancellationToken);
 
         return result.IsFailure ? HandleFailure(result.Error!) : NoContent();

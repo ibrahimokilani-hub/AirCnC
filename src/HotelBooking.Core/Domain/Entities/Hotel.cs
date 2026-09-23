@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Enums;
+using HotelBooking.Core.Domain.ValueObjects;
 
 namespace HotelBooking.Core.Domain.Entities;
 
@@ -14,6 +15,7 @@ public sealed class Hotel : AuditableEntity
     private readonly List<RoomType> _roomTypes = [];
     private readonly List<Room> _rooms = [];
     private readonly List<Amenity> _amenities = [];
+    private readonly List<NearbyAttraction> _nearbyAttractions = [];
 
     private Hotel(
         int cityId,
@@ -63,6 +65,21 @@ public sealed class Hotel : AuditableEntity
     public IReadOnlyCollection<RoomType> RoomTypes => _roomTypes;
     public IReadOnlyCollection<Room> Rooms => _rooms;
     public IReadOnlyCollection<Amenity> Amenities => _amenities;
+    public IReadOnlyCollection<NearbyAttraction> NearbyAttractions => _nearbyAttractions;
+    
+    public NearbyAttraction AddNearbyAttraction(string name, string category, decimal latitude, decimal longitude)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(latitude, -90m);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(latitude, 90m);
+        ArgumentOutOfRangeException.ThrowIfLessThan(longitude, -180m);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(longitude, 180m);
+
+        var distance = GeoDistance.Meters(Latitude, Longitude, latitude, longitude);
+        var attraction = NearbyAttraction.Create(name, category, latitude, longitude, distance);
+
+        _nearbyAttractions.Add(attraction);
+        return attraction;
+    }
     
     public void SetAmenities(IEnumerable<Amenity> amenities)
     {

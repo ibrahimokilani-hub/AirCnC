@@ -19,6 +19,33 @@ public sealed class DevDataSeeder(
     public const string AdminEmail = "admin@hotelbooking.local";
     public const string GuestEmail = "guest@hotelbooking.local";
 
+    /// <summary>
+    /// Three real pins per city, keyed by city name. A hotel gets the pins of the city
+    /// it sits in; the distance to each one is computed by the entity when it is added.
+    /// </summary>
+    private static readonly Dictionary<string, (string Name, string Category, decimal Latitude, decimal Longitude)[]> Attractions =
+        new()
+        {
+            ["Nablus"] =
+            [
+                ("Old City of Nablus", "Culture", 32.2205m, 35.2600m),
+                ("Jacob's Well", "Landmark", 32.2098m, 35.2831m),
+                ("Mount Gerizim", "Nature", 32.2000m, 35.2730m)
+            ],
+            ["Ramallah"] =
+            [
+                ("Al-Manara Square", "Landmark", 31.9046m, 35.2040m),
+                ("Yasser Arafat Museum", "Museum", 31.9059m, 35.1970m),
+                ("Ramallah Cultural Palace", "Culture", 31.8944m, 35.2028m)
+            ],
+            ["Amman"] =
+            [
+                ("Roman Theatre", "Landmark", 31.9515m, 35.9396m),
+                ("Amman Citadel", "Culture", 31.9548m, 35.9344m),
+                ("Rainbow Street", "Shopping", 31.9500m, 35.9270m)
+            ]
+        };
+
     public async Task SeedAsync(
         CancellationToken cancellationToken = default)
     {
@@ -175,6 +202,8 @@ public sealed class DevDataSeeder(
             "A comfortable hotel in the heart of Nablus.",
             cities["Nablus"],
             ownerId,
+            32.2226m,
+            35.2605m,
             amenities,
             cancellationToken);
 
@@ -183,6 +212,8 @@ public sealed class DevDataSeeder(
             "A quiet hotel near the old city.",
             cities["Nablus"],
             ownerId,
+            32.2190m,
+            35.2580m,
             amenities,
             cancellationToken);
 
@@ -191,6 +222,8 @@ public sealed class DevDataSeeder(
             "A modern hotel close to the city centre.",
             cities["Ramallah"],
             ownerId,
+            31.9070m,
+            35.2015m,
             amenities,
             cancellationToken);
 
@@ -199,6 +232,8 @@ public sealed class DevDataSeeder(
             "A comfortable hotel for visitors to Amman.",
             cities["Amman"],
             ownerId,
+            31.9525m,
+            35.9310m,
             amenities,
             cancellationToken);
     }
@@ -208,6 +243,8 @@ public sealed class DevDataSeeder(
         string description,
         City city,
         int ownerId,
+        decimal latitude,
+        decimal longitude,
         Dictionary<string, Amenity> amenities,
         CancellationToken cancellationToken)
     {
@@ -226,8 +263,8 @@ public sealed class DevDataSeeder(
                 4,
                 HotelType.Luxury,
                 $"{city.Name} City Centre",
-                0,
-                0);
+                latitude,
+                longitude);
 
             hotel.SetAmenities(
             [
@@ -235,6 +272,8 @@ public sealed class DevDataSeeder(
                 amenities["Parking"],
                 amenities["Air Conditioning"]
             ]);
+
+            AddAttractions(hotel, city.Name);
 
             context.Hotels.Add(hotel);
 
@@ -246,6 +285,29 @@ public sealed class DevDataSeeder(
         }
 
         await EnsureRoomTypesAsync(hotel, cancellationToken);
+    }
+
+    /// <summary>
+    /// Pins are added to the aggregate before it is saved, so EF inserts them with the
+    /// hotel and fills in their HotelId. A city we have no pins for is left alone.
+    /// </summary>
+    private static void AddAttractions(
+        Hotel hotel,
+        string cityName)
+    {
+        if (!Attractions.TryGetValue(cityName, out var attractions))
+        {
+            return;
+        }
+
+        foreach (var (name, category, latitude, longitude) in attractions)
+        {
+            hotel.AddNearbyAttraction(
+                name,
+                category,
+                latitude,
+                longitude);
+        }
     }
 
     private async Task EnsureRoomTypesAsync(
