@@ -9,15 +9,15 @@ using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesGrid;
+namespace HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesList;
 
-public sealed record GetCitiesGridQueryHandler(
+public sealed record GetCitiesListQueryHandler(
     IAppDbContext context,
-    IValidator<GetCitiesGridQuery> validator
-    ): IQueryHandler<GetCitiesGridQuery, PagedResult<CityGridItem>>
+    IValidator<GetCitiesListQuery> validator
+    ): IQueryHandler<GetCitiesListQuery, PagedResult<CityListItem>>
 {
-    public async Task<Result<PagedResult<CityGridItem>>> HandleAsync(
-        GetCitiesGridQuery query,
+    public async Task<Result<PagedResult<CityListItem>>> HandleAsync(
+        GetCitiesListQuery query,
         CancellationToken cancellationToken
     )
     {
@@ -25,7 +25,7 @@ public sealed record GetCitiesGridQueryHandler(
 
         if (!validatation.IsValid)
         {
-            return Result<PagedResult<CityGridItem>>.Failure(validatation.ToValidationError());
+            return Result<PagedResult<CityListItem>>.Failure(validatation.ToValidationError());
         }
 
         IQueryable<City> cities = context.Cities.AsNoTracking();
@@ -37,16 +37,17 @@ public sealed record GetCitiesGridQueryHandler(
         }
         
         var page = await Sort(cities, query.SortBy, query.SortDirection)
-            .Select(city => new CityGridItem(
+            .Select(city => new CityListItem(
                 city.Id,
                 city.Name,
                 city.Country,
                 city.PostOffice,
+                city.Hotels.Count,
                 city.CreatedAtUtc,
                 city.UpdatedAtUtc))
             .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
 
-        return Result<PagedResult<CityGridItem>>.Success(page);
+        return Result<PagedResult<CityListItem>>.Success(page);
     }
     private static IOrderedQueryable<City> Sort(IQueryable<City> cities, string? sortBy, string? direction)
     {

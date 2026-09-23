@@ -5,7 +5,7 @@ using HotelBooking.Core.Application.Abstractions.Messaging;
 using HotelBooking.Core.Application.Features.Cities.Commands.CreateCity;
 using HotelBooking.Core.Application.Features.Cities.Commands.DeleteCity;
 using HotelBooking.Core.Application.Features.Cities.Commands.UpdateCity;
-using HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesGrid;
+using HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesList;
 using HotelBooking.Core.Application.Features.Cities.Queries.GetCityById;
 using HotelBooking.Core.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +16,7 @@ namespace HotelBooking.Api.Controllers.Admin;
 [Route("api/v1/admin/cities")]
 [Tags("Admin · Cities")]
 public sealed class CitiesController(
-    IQueryHandler<GetCitiesGridQuery, PagedResult<CityGridItem>> getCitiesGrid,
+    IQueryHandler<GetCitiesListQuery, PagedResult<CityListItem>> getCitiesList,
     ICommandHandler<CreateCityCommand, int> createCity,
     ICommandHandler<UpdateCityCommand> updateCity,
     ICommandHandler<DeleteCityCommand> deleteCity,
@@ -29,16 +29,16 @@ public sealed class CitiesController(
     [HttpGet]
     [ProducesResponseType<ApiResponse<PagedResponse<CityResponse>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetGrid([FromQuery] FilteredRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetList([FromQuery] FilteredRequest request, CancellationToken cancellationToken)
     {
-        var query = new GetCitiesGridQuery(
+        var query = new GetCitiesListQuery(
             request.Page, 
             request.PageSize, 
             request.Search, 
             request.SortBy, 
             request.SortDirection);
 
-        var result = await getCitiesGrid.HandleAsync(query, cancellationToken);
+        var result = await getCitiesList.HandleAsync(query, cancellationToken);
 
         return result.IsFailure
             ? HandleFailure(result.Error!)

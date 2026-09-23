@@ -21,6 +21,12 @@ public sealed class DeleteCityCommandHandler(
         {
             return Result.Failure(CityErrors.NotFound(command.Id));
         }
+        
+        var hasHotels = await context.Hotels.AnyAsync(hotel => hotel.CityId == command.Id, cancellationToken);
+        if (hasHotels)
+        {
+            return Result.Failure(CityErrors.HasHotels(command.Id));
+        }
 
         context.Cities.Remove(city);
 

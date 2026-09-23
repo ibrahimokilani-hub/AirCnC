@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using FluentValidation;
+using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Application.Abstractions.Messaging;
+using HotelBooking.Core.Application.Features.Hotels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelBooking.Core;
@@ -21,6 +23,7 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
         services.AddHandlersFromAssembly(assembly);
+        services.AddScoped<IHotelOwnership, HotelOwnership>();
 
         return services;
     }

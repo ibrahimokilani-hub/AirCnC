@@ -8,6 +8,8 @@ public class City : AuditableEntity
     public const int CountryMaxLength = 40;
     public const int PostOfficeMaxLength = 15;
     
+    private readonly List<Hotel> _hotels = [];
+    
     private City(string name, string country, string postOffice)
     {
         Name = name;
@@ -18,6 +20,8 @@ public class City : AuditableEntity
     public string Name { get; set; }
     public string Country { get; set; }
     public string PostOffice { get; set; }
+    
+    public IReadOnlyCollection<Hotel> Hotels => _hotels;
     
     public static City Create(string name, string country, string postOffice)
     {

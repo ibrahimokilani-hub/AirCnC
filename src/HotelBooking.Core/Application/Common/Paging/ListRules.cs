@@ -1,6 +1,6 @@
 ﻿namespace HotelBooking.Core.Application.Common.Paging;
 
-public static class GridRules
+public static class ListRules
 {
     public const int MaxPageSize = 100;
     public const int MaxSearchLength = 100;
