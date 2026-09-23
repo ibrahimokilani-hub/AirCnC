@@ -7,6 +7,8 @@ using HotelBooking.Core.Application.Features.Hotels.Commands.DeleteHotel;
 using HotelBooking.Core.Application.Features.Hotels.Commands.UpdateHotel;
 using HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelById;
 using HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelsList;
+using HotelBooking.Core.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelBooking.Api.Controllers.Admin;
@@ -23,6 +25,7 @@ public sealed class HotelsController(
 {
     /// <summary>The admin grid: paged, searchable by name, owner or city, sortable.</summary>
     /// <remarks>sortBy: name (default), city, starRating, createdAt.</remarks>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpGet]
     [ProducesResponseType<PagedResponse<HotelListItem>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -38,6 +41,7 @@ public sealed class HotelsController(
     /// <summary>Creates a hotel in an existing city.</summary>
     /// <response code="201">Created. "data" holds its id.</response>
     /// <response code="400">Invalid fields, or a city that doesn't exist.</response>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPost]
     [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -55,6 +59,7 @@ public sealed class HotelsController(
     }
 
     /// <summary>Gets one hotel, for the edit form.</summary>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpGet("{id:int:min(1)}")]
     [ProducesResponseType<ApiResponse<HotelResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
@@ -66,6 +71,7 @@ public sealed class HotelsController(
     }
 
     /// <summary>Replaces every field of a hotel.</summary>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPut("{id:int:min(1)}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
@@ -82,6 +88,7 @@ public sealed class HotelsController(
     }
 
     /// <summary>Deletes a hotel (soft delete).</summary>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpDelete("{id:int:min(1)}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]

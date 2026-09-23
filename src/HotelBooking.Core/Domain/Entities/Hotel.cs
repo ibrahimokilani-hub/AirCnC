@@ -10,6 +10,9 @@ public sealed class Hotel : AuditableEntity
     public const int AddressMaxLength = 300;
     public const int MinStars = 1;
     public const int MaxStars = 5;
+    
+    private readonly List<RoomType> _roomTypes = [];
+
 
     private Hotel(
         int cityId,
@@ -55,6 +58,8 @@ public sealed class Hotel : AuditableEntity
     public decimal Latitude { get; private set; }
 
     public decimal Longitude { get; private set; }
+    
+    public IReadOnlyCollection<RoomType> RoomTypes => _roomTypes;
 
     public static Hotel Create(
         int cityId,
