@@ -2,6 +2,7 @@
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
+using HotelBooking.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Persistence;
@@ -10,8 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options), IAppDbContext
 {
     public DbSet<City> Cities => Set<City>();
-
     public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

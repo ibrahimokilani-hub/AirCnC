@@ -13,5 +13,7 @@ public static class AuthErrors
     public static Error NotAuthenticated =
         Error.Unauthorized("Auth.NotAuthenticated", "Please log in... ");
     
-    
+    public static readonly Error InvalidRefresh =
+        Error.Unauthorized("Auth.InvalidRefreshToken", "Your session has expired. Please log in again.");
+
 }

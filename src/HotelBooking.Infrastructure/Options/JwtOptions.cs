@@ -11,4 +11,5 @@ public class JwtOptions
     [Required] public string SecretKey { get; init; } = string.Empty;
     
     public int AccessTokenMinutes { get; init; }
+    public int RefreshTokenDays { get; init; }
 }
