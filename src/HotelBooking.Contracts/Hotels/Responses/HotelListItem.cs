@@ -7,5 +7,6 @@ public sealed record HotelListItem(
     int StarRating,
     string OwnerName,
     string HotelType,
+    int RoomsCount,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);

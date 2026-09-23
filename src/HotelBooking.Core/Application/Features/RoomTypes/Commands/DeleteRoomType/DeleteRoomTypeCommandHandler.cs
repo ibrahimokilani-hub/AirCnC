@@ -17,6 +17,11 @@ public sealed class DeleteRoomTypeCommandHandler(IAppDbContext context) : IComma
         {
             return Result.Failure(RoomTypeErrors.NotFound(command.HotelId, command.Id));
         }
+        
+        if (await context.Rooms.AnyAsync(room => room.RoomTypeId == command.Id, cancellationToken))
+        {
+            return Result.Failure(RoomTypeErrors.HasRooms(command.Id));
+        }
 
         context.RoomTypes.Remove(roomType);
         await context.SaveChangesAsync(cancellationToken);

@@ -12,6 +12,7 @@ public sealed class Hotel : AuditableEntity
     public const int MaxStars = 5;
     
     private readonly List<RoomType> _roomTypes = [];
+    private readonly List<Room> _rooms = [];
 
 
     private Hotel(
@@ -60,6 +61,7 @@ public sealed class Hotel : AuditableEntity
     public decimal Longitude { get; private set; }
     
     public IReadOnlyCollection<RoomType> RoomTypes => _roomTypes;
+    public IReadOnlyCollection<Room> Rooms => _rooms;
 
     public static Hotel Create(
         int cityId,

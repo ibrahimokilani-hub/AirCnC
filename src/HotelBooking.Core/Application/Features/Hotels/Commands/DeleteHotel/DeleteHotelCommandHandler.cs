@@ -23,6 +23,11 @@ public sealed class DeleteHotelCommandHandler(
         {
             return Result.Failure(HotelErrors.NotFound(command.Id));
         }
+        
+        if (await context.Rooms.AnyAsync(room => room.HotelId == command.Id, cancellationToken))
+        {
+            return Result.Failure(HotelErrors.HasRooms(command.Id));
+        }
 
         context.Hotels.Remove(hotel);
         await context.SaveChangesAsync(cancellationToken);

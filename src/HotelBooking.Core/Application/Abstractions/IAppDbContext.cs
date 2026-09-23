@@ -9,6 +9,7 @@ public interface IAppDbContext
     DbSet<User> Users { get; }
     DbSet<Hotel> Hotels { get; }
     DbSet<RoomType> RoomTypes { get; }
+    DbSet<Room> Rooms { get; }
     
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

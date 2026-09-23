@@ -9,6 +9,9 @@ public static class HotelErrors
 
    public static Error NotYours(int id) =>
         Error.Forbidden("Hotel.NotYours", $"The hotel with ID '{id}' belongs to another owner.");
+   
+   public static Error HasRooms(int id) =>
+       Error.Conflict("Hotel.HasRooms", $"The hotel with ID '{id}' still has rooms. Delete them first.");
 
  public static ValidationError UnknownCity(int cityId) =>
         new(new Dictionary<string, string[]>

@@ -49,6 +49,7 @@ public sealed class GetHotelsListQueryHandler(
                 hotel.StarRating,
                 hotel.Owner.FirstName + " " + hotel.Owner.LastName,
                 hotel.HotelType.ToString(),
+                hotel.Rooms.Count,
                 hotel.CreatedAtUtc,
                 hotel.UpdatedAtUtc))
             .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);

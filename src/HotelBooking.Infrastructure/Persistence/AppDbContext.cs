@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<User> Users => Set<User>();
     public DbSet<Hotel> Hotels => Set<Hotel>();
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
+    public DbSet<Room> Rooms => Set<Room>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
