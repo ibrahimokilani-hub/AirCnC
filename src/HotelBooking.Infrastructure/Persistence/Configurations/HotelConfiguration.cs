@@ -37,6 +37,15 @@ public sealed class HotelConfiguration : IEntityTypeConfiguration<Hotel>
             .WithMany(city => city.Hotels)
             .HasForeignKey(hotel => hotel.CityId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasMany(hotel => hotel.Amenities)
+            .WithMany()
+            .UsingEntity<Dictionary<string, object>>(
+                "HotelAmenities",
+                amenity => amenity.HasOne<Amenity>().WithMany().HasForeignKey("AmenityId"),
+                hotel => hotel.HasOne<Hotel>().WithMany().HasForeignKey("HotelId"),
+                join => join.HasKey("HotelId", "AmenityId"));
+
 
         builder.HasIndex(hotel => hotel.Name);
         builder.HasIndex(hotel => hotel.StarRating);

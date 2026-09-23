@@ -13,7 +13,7 @@ public sealed class Hotel : AuditableEntity
     
     private readonly List<RoomType> _roomTypes = [];
     private readonly List<Room> _rooms = [];
-
+    private readonly List<Amenity> _amenities = [];
 
     private Hotel(
         int cityId,
@@ -62,6 +62,14 @@ public sealed class Hotel : AuditableEntity
     
     public IReadOnlyCollection<RoomType> RoomTypes => _roomTypes;
     public IReadOnlyCollection<Room> Rooms => _rooms;
+    public IReadOnlyCollection<Amenity> Amenities => _amenities;
+    
+    public void SetAmenities(IEnumerable<Amenity> amenities)
+    {
+        _amenities.Clear();
+        _amenities.AddRange(amenities.Distinct());
+    }
+
 
     public static Hotel Create(
         int cityId,

@@ -4,9 +4,9 @@ using HotelBooking.Core.Domain.Enums;
 
 namespace HotelBooking.Core.Application.Features.Hotels.Commands.CreateHotel;
 
-public abstract class CreateHotelValidator<T> : AbstractValidator<CreateHotelCommand>
+public sealed class CreateHotelValidator : AbstractValidator<CreateHotelCommand>
 {
-    protected CreateHotelValidator()
+    public CreateHotelValidator()
     {
         RuleFor(hotel => hotel.CityId).GreaterThan(0);
         RuleFor(hotel => hotel.Name).NotEmpty().MaximumLength(Hotel.NameMaxLength);

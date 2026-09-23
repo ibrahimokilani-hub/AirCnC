@@ -29,7 +29,8 @@ public sealed class GetHotelByIdQueryHandler(
                 hotel.HotelType.ToString(),
                 hotel.Address,
                 hotel.Latitude,
-                hotel.Longitude))
+                hotel.Longitude,
+                hotel.Amenities.Select(am => am.Id).ToList()))
             .FirstOrDefaultAsync(cancellationToken);
 
         return hotel is null

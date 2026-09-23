@@ -4,9 +4,9 @@ using HotelBooking.Core.Domain.Enums;
 
 namespace HotelBooking.Core.Application.Features.Hotels.Commands.UpdateHotel;
 
-public abstract class UpdateHotelValidator<T> : AbstractValidator<UpdateHotelCommand>
+public sealed class UpdateHotelValidator : AbstractValidator<UpdateHotelCommand>
 {
-    protected UpdateHotelValidator()
+    public UpdateHotelValidator()
     {
         RuleFor(hotel => hotel.Id).NotEmpty();
         RuleFor(hotel => hotel.CityId).GreaterThan(0);

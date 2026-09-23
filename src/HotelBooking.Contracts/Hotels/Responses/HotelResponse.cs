@@ -12,4 +12,5 @@ public sealed record HotelResponse(
     string HotelType,
     string Address,
     decimal Latitude,
-    decimal Longitude);
+    decimal Longitude,
+    IReadOnlyList<int> AmenityIds);
