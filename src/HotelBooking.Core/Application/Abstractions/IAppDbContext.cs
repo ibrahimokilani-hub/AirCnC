@@ -11,6 +11,8 @@ public interface IAppDbContext
     DbSet<RoomType> RoomTypes { get; }
     DbSet<Room> Rooms { get; }
     DbSet<Amenity> Amenities { get; }
+    DbSet<BookingItem> BookingItems { get; }
+    
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

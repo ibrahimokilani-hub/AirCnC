@@ -9,6 +9,7 @@ namespace HotelBooking.Core.Domain.Entities;
 public sealed class Room : AuditableEntity
 {
     public const int NumberMaxLength = 20;
+    private readonly List<BookingItem> _bookingItems = [];
 
     private Room(int hotelId, int roomTypeId, string number)
     {
@@ -24,6 +25,9 @@ public sealed class Room : AuditableEntity
     public RoomType RoomType { get; private set; } = null!;
 
     public string Number { get; private set; }
+    
+    public IReadOnlyCollection<BookingItem> BookingItems => _bookingItems;
+    
 
     public static Room Create(int hotelId, int roomTypeId, string number)
     {

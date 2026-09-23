@@ -7,5 +7,6 @@ public sealed record RoomListItem(
     string RoomTypeName,
     int MaxAdults,
     int MaxChildren,
+    bool IsAvailableToday,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);

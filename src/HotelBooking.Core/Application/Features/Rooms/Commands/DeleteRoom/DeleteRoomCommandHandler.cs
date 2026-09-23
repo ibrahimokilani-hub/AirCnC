@@ -7,6 +7,7 @@ namespace HotelBooking.Core.Application.Features.Rooms.Commands.DeleteRoom;
 
 public sealed class DeleteRoomCommandHandler(
     IAppDbContext context,
+    TimeProvider timeProvider,
     IHotelOwnership ownership)
     : ICommandHandler<DeleteRoomCommand>
 {
@@ -26,6 +27,17 @@ public sealed class DeleteRoomCommandHandler(
         if (room is null)
         {
             return Result.Failure(RoomErrors.NotFound(command.HotelId, command.Id));
+        }
+        
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+
+        var hasUpcoming = await context.BookingItems.AnyAsync(
+            item => item.RoomId == command.Id && item.IsActive && item.CheckOut > today,
+            cancellationToken);
+
+        if (hasUpcoming)
+        {
+            return Result.Failure(RoomErrors.HasUpcomingBookings(command.Id));
         }
 
         context.Rooms.Remove(room);
