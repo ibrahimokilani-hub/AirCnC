@@ -90,7 +90,7 @@ public sealed class AuthController(
 
     /// <summary>Revokes the refresh token and deletes the cookie.</summary>
     /// <response code="204">Logged out (also when there was nothing to revoke).</response>
-    [AllowAnonymous]
+    [Authorize]
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout(CancellationToken cancellationToken)
