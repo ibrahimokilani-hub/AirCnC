@@ -27,7 +27,6 @@ public sealed class HotelsController(
 {
     /// <summary>The admin grid: paged, searchable by name, owner or city, sortable.</summary>
     /// <remarks>sortBy: name (default), city, starRating, createdAt.</remarks>
-    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpGet]
     [ProducesResponseType<PagedResponse<HotelListItem>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]

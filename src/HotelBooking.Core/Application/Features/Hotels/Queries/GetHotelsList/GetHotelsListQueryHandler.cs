@@ -7,6 +7,7 @@ using HotelBooking.Core.Application.Common.Paging;
 using HotelBooking.Core.Application.Common.Validation;
 using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
+using HotelBooking.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelsList;
@@ -26,10 +27,14 @@ public sealed class GetHotelsListQueryHandler(
         {
             return Result<PagedResult<HotelListItem>>.Failure(validation.ToValidationError());
         }
-        
+
         IQueryable<Hotel> hotels = context.Hotels
-            .AsNoTracking()
-            .Where(hotel => hotel.OwnerId == currentUser.UserId);
+            .AsNoTracking();
+       
+        if (currentUser.Role == UserRole.Admin)
+        {
+            hotels = hotels.Where(hotel => hotel.OwnerId == currentUser.UserId);
+        }
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -40,6 +45,7 @@ public sealed class GetHotelsListQueryHandler(
                 hotel.Owner.LastName.Contains(search) ||
                 hotel.City.Name.Contains(search));
         }
+        
 
         var page = await Sort(hotels, query.SortBy, query.SortDirection)
             .Select(hotel => new HotelListItem(

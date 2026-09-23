@@ -2,6 +2,7 @@
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Application.Abstractions.Messaging;
 using HotelBooking.Core.Domain.Common;
+using HotelBooking.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelById;
@@ -13,10 +14,16 @@ public sealed class GetHotelByIdQueryHandler(
 {
     public async Task<Result<HotelResponse>> HandleAsync(GetHotelByIdQuery query, CancellationToken cancellationToken)
     {
-        
-        var hotel = await context.Hotels
+        var hotels = context.Hotels
             .AsNoTracking()
-            .Where(hotel => hotel.Id == query.Id && hotel.OwnerId == currentUser.UserId)
+            .Where(hotel => hotel.Id == query.Id);
+
+        if (currentUser.Role == UserRole.Admin)
+        {
+            hotels = hotels.Where(hotel => hotel.OwnerId == currentUser.UserId);
+        }
+
+        var hotel = await hotels
             .Select(hotel => new HotelResponse(
                 hotel.Id,
                 hotel.CityId,
