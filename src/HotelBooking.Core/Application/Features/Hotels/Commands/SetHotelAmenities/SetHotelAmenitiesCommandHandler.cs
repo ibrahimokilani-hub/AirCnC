@@ -20,7 +20,7 @@ public sealed class SetHotelAmenitiesCommandHandler(
             .Include(hotel => hotel.Amenities)
             .FirstOrDefaultAsync(hotel => hotel.Id == command.HotelId, cancellationToken);
         
-        var access = await ownership.EnsureOwnerAsync(hotel!.OwnerId, cancellationToken);
+        var access = await ownership.EnsureOwnerAsync(hotel!.Id, cancellationToken);
         if (access.IsFailure)
         {
             return access;
