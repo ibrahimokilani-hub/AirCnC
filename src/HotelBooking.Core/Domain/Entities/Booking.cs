@@ -13,11 +13,13 @@ public sealed class Booking : Entity
     private Booking(
         int userId,
         int hotelId,
+        Guid idempotencyKey,
         string? notes,
         DateTime createdAtUtc)
     {
         UserId = userId;
         HotelId = hotelId;
+        IdempotencyKey = idempotencyKey;
         Notes = notes;
         CreatedAtUtc = createdAtUtc;
         Status = BookingStatus.Confirmed;
@@ -26,6 +28,8 @@ public sealed class Booking : Entity
     public int UserId { get; private set; }
 
     public int HotelId { get; private set; }
+
+    public Guid IdempotencyKey { get; private set; }
 
     public string ConfirmationNumber => ConfirmationPrefix + Id;
 
@@ -42,15 +46,22 @@ public sealed class Booking : Entity
     public static Booking Create(
         int userId,
         int hotelId,
+        Guid idempotencyKey,
         string? notes,
         DateTime createdAtUtc)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(userId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hotelId);
 
+        if (idempotencyKey == Guid.Empty)
+        {
+            throw new ArgumentException("A booking needs an idempotency key.", nameof(idempotencyKey));
+        }
+
         return new Booking(
             userId,
             hotelId,
+            idempotencyKey,
             string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
             createdAtUtc);
     }

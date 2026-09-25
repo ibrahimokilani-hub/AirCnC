@@ -9,5 +9,6 @@ public sealed record CheckoutCommand(
     DateOnly CheckOut,
     int Adults,
     int Children,
-    string? Notes)
+    string? Notes,
+    Guid IdempotencyKey)
     : ICommand<CheckoutResponse>;

@@ -14,6 +14,7 @@ public sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
 
         builder.Ignore(booking => booking.ConfirmationNumber);
+        builder.HasIndex(booking => new { booking.UserId, booking.IdempotencyKey }).IsUnique();
 
         builder.Property(booking => booking.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(booking => booking.Notes).HasMaxLength(1000);

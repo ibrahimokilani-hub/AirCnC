@@ -28,12 +28,29 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
         }
 
 
-        var guest = await context.Users
+        // Did this checkout attempt already go through? One seek on the unique index.
+        var existing = await context.Bookings
             .AsNoTracking()
-            .Where(user => user.Id == userId)
+            .Where(booking => booking.UserId == userId && booking.IdempotencyKey == command.IdempotencyKey)
+            .Select(booking => new CheckoutResponse(
+                booking.Id,
+                Booking.ConfirmationPrefix + booking.Id.ToString(),
+                booking.TotalPrice,
+                false))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (guest is null)
+        if (existing is not null)
+        {
+            return Result<CheckoutResponse>.Success(existing);
+        }
+
+        // The token says who they are; this says the account still exists, so a deleted user
+        // holding a live token gets a clean 401 instead of a foreign-key violation on insert.
+        var accountExists = await context.Users
+            .AsNoTracking()
+            .AnyAsync(user => user.Id == userId, cancellationToken);
+
+        if (!accountExists)
         {
             return Result<CheckoutResponse>.Failure(AuthErrors.NotAuthenticated);
         }
@@ -73,6 +90,7 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
         var booking = Booking.Create(
             userId,
             roomType.HotelId,
+            command.IdempotencyKey,
             command.Notes,
             now);
 
@@ -84,6 +102,6 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
         await context.SaveChangesAsync(cancellationToken);
 
         return Result<CheckoutResponse>.Success(
-            new CheckoutResponse(booking.Id, booking.ConfirmationNumber, booking.TotalPrice));
+            new CheckoutResponse(booking.Id, booking.ConfirmationNumber, booking.TotalPrice, true));
     }
 }

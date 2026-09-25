@@ -19,14 +19,6 @@ public static class BookingErrors
             ["Adults"] = [$"That many guests don't fit in one '{roomTypeName}'."]
         });
 
-    // The guest details are copied from the account (D-20), so an account without a phone
-    // can't produce a valid booking. Rows created before Users.Phone existed have "".
-    public static ValidationError ProfileIncomplete =>
-        new(new Dictionary<string, string[]>
-        {
-            ["Phone"] = ["Add a phone number to your profile before booking."]
-        });
-
     public static Error RoomTypeSoldOut(string roomTypeName, DateOnly checkIn, DateOnly checkOut) =>
         Error.Conflict(
             "Booking.SoldOut",

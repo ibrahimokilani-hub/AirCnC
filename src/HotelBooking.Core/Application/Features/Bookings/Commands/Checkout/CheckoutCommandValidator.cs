@@ -19,6 +19,9 @@ public sealed class CheckoutCommandValidator : AbstractValidator<CheckoutCommand
         RuleFor(command => command.Adults).InclusiveBetween(1, 20);
         RuleFor(command => command.Children).InclusiveBetween(0, 20);
 
+        RuleFor(command => command.IdempotencyKey)
+            .NotEmpty().WithMessage("Send the Idempotency-Key header your checkout started with.");
+
         RuleFor(command => command.Notes).MaximumLength(2500);
     }
 }
