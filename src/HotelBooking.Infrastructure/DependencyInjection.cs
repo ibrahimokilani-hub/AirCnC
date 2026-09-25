@@ -35,11 +35,33 @@ public static class DependencyInjection
 
         // Stateless and thread-safe: one instance for the whole app.
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
-
+        services.AddCaching(configuration);
         services.AddJwtAuthentication();
 
         return services;
     }
+    
+    private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        var redis = configuration.GetConnectionString("Redis");
+
+        if (string.IsNullOrWhiteSpace(redis))
+        {
+            services.AddDistributedMemoryCache();
+        }
+        else
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redis;
+                options.InstanceName = "hotelbooking:";
+            });
+        }
+
+        return services;
+    }
+
+    
  private static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
     {
         services.AddOptions<JwtOptions>()

@@ -46,6 +46,21 @@ public sealed class DevDataSeeder(
             ]
         };
 
+    /// <summary>
+    /// The deals the home page ranks, keyed by hotel name: the deal's name, how it's
+    /// applied, its value, and how many days it runs from today. Nablus Grand Hotel is
+    /// deliberately absent — a featured-deals query that returns every hotel proves
+    /// nothing. Ramallah Palace uses a FixedAmount so both branches of the query
+    /// (and Discount.ApplyTo) are exercised.
+    /// </summary>
+    private static readonly Dictionary<string, (string Name, DiscountType Type, decimal Value, int Days)> Discounts =
+        new()
+        {
+            ["Olive Garden Inn"] = ("Autumn Getaway", DiscountType.Percentage, 35m, 45),
+            ["Amman Royal Hotel"] = ("City Break", DiscountType.Percentage, 25m, 30),
+            ["Ramallah Palace"] = ("15 Off Your Stay", DiscountType.FixedAmount, 15m, 14)
+        };
+
     public async Task SeedAsync(
         CancellationToken cancellationToken = default)
     {
@@ -279,6 +294,8 @@ public sealed class DevDataSeeder(
 
             AddAttractions(hotel, city.Name);
 
+            AddDiscount(hotel, name);
+
             context.Hotels.Add(hotel);
 
             await context.SaveChangesAsync(cancellationToken);
@@ -312,6 +329,32 @@ public sealed class DevDataSeeder(
                 latitude,
                 longitude);
         }
+    }
+
+    /// <summary>
+    /// The deal goes on the aggregate before it is saved, like the map pins, so EF inserts
+    /// it with the hotel. A hotel with no entry runs no deal. Not static, unlike
+    /// AddAttractions: a deal is only a deal *today*, so it reads the injected clock.
+    /// </summary>
+    private void AddDiscount(
+        Hotel hotel,
+        string hotelName)
+    {
+        if (!Discounts.TryGetValue(hotelName, out var deal))
+        {
+            return;
+        }
+
+        var today = DateOnly.FromDateTime(
+            timeProvider.GetUtcNow().UtcDateTime);
+
+        hotel.AddDiscount(
+            deal.Name,
+            deal.Type,
+            deal.Value,
+            today,
+            today.AddDays(deal.Days),
+            isActive: true);
     }
 
     private async Task EnsureRoomTypesAsync(
