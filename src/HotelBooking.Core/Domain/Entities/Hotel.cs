@@ -16,6 +16,7 @@ public sealed class Hotel : AuditableEntity
     private readonly List<Room> _rooms = [];
     private readonly List<Amenity> _amenities = [];
     private readonly List<NearbyAttraction> _nearbyAttractions = [];
+    private readonly List<Discount> _discounts = [];
 
     private Hotel(
         int cityId,
@@ -66,6 +67,16 @@ public sealed class Hotel : AuditableEntity
     public IReadOnlyCollection<Room> Rooms => _rooms;
     public IReadOnlyCollection<Amenity> Amenities => _amenities;
     public IReadOnlyCollection<NearbyAttraction> NearbyAttractions => _nearbyAttractions;
+    public IReadOnlyCollection<Discount> Discounts => _discounts;
+    
+    public Discount AddDiscount(string name, DiscountType discountType, decimal value, DateOnly startsAt, DateOnly endsAt)
+    {
+        var discount = Discount.Create(name, discountType, value, startsAt, endsAt);
+
+        _discounts.Add(discount);
+        return discount;
+    }
+
     
     public NearbyAttraction AddNearbyAttraction(string name, string category, decimal latitude, decimal longitude)
     {

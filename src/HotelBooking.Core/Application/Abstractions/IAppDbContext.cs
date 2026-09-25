@@ -14,6 +14,7 @@ public interface IAppDbContext
     DbSet<BookingItem> BookingItems { get; }
     DbSet<Booking> Bookings { get; }
     DbSet<NearbyAttraction> NearbyAttractions { get; }
+    DbSet<Discount> Discounts { get; }
     
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

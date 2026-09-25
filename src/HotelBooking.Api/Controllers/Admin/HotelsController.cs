@@ -1,4 +1,5 @@
 ﻿using HotelBooking.Contracts.Common;
+using HotelBooking.Contracts.Home.Requests;
 using HotelBooking.Contracts.Hotels.Requests;
 using HotelBooking.Contracts.Hotels.Responses;
 using HotelBooking.Core.Application.Abstractions.Messaging;
@@ -8,6 +9,8 @@ using HotelBooking.Core.Application.Features.Hotels.Commands.DeleteHotel;
 using HotelBooking.Core.Application.Features.Hotels.Commands.RemoveNearbyAttraction;
 using HotelBooking.Core.Application.Features.Hotels.Commands.SetHotelAmenities;
 using HotelBooking.Core.Application.Features.Hotels.Commands.UpdateHotel;
+using HotelBooking.Core.Application.Features.Hotels.Discounts.Commands;
+using HotelBooking.Core.Application.Features.Hotels.Discounts.Commands.RemoveDiscount;
 using HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelById;
 using HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelsList;
 using HotelBooking.Core.Domain.Enums;
@@ -26,7 +29,9 @@ public sealed class HotelsController(
     IQueryHandler<GetHotelsListQuery, PagedResult<HotelListItem>> getHotelsList,
     ICommandHandler<SetHotelAmenitiesCommand> setHotelAmenities,
     ICommandHandler<AddNearbyAttractionCommand, int> addNearbyAttraction,
-    ICommandHandler<RemoveNearbyAttractionCommand> removeNearbyAttraction)
+    ICommandHandler<RemoveNearbyAttractionCommand> removeNearbyAttraction,
+    ICommandHandler<AddDiscountCommand, int> addDiscount,
+    ICommandHandler<RemoveDiscountCommand> removeDiscount)
     : ApiController
 {
     /// <summary>The admin grid: paged, searchable by name, owner or city, sortable.</summary>
@@ -145,9 +150,35 @@ public sealed class HotelsController(
 
         return result.IsFailure ? HandleFailure(result.Error!) : NoContent();
     }
+    
+     /// <summary>Adds a discount. It shows in featured deals while it's active.</summary>
+    [HttpPost("{id:int:min(1)}/discounts")]
+    [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddDiscount(int id, [FromBody] AddDiscountRequest request, CancellationToken cancellationToken)
+    {
+        var result = await addDiscount.HandleAsync(
+            new AddDiscountCommand(id, request.Name, request.DiscountType, request.Value, request.StartsAt, request.EndsAt),
+            cancellationToken);
+
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : StatusCode(StatusCodes.Status201Created, new ApiResponse<IdResponse>(new IdResponse(result.Value)));
+    }
+
+    /// <summary>Removes a discount.</summary>
+    [HttpDelete("{id:int:min(1)}/discounts/{discountId:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveDiscount(int id, int discountId, CancellationToken cancellationToken)
+    {
+        var result = await removeDiscount.HandleAsync(new RemoveDiscountCommand(id, discountId), cancellationToken);
+
+        return result.IsFailure ? HandleFailure(result.Error!) : NoContent();
+    }
 
     /// <summary>Deletes a hotel (soft delete).</summary>
-    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpDelete("{id:int:min(1)}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
