@@ -13,13 +13,16 @@ public sealed class Discount : Entity
         DiscountType discountType,
         decimal value,
         DateOnly startsAt,
-        DateOnly endsAt)
+        DateOnly endsAt,
+        bool isActive
+        )
     {
         Name = name;
         DiscountType = discountType;
         Value = value;
         StartsAt = startsAt;
         EndsAt = endsAt;
+        IsActive = isActive;
     }
 
     public int HotelId { get; private set; }
@@ -33,6 +36,7 @@ public sealed class Discount : Entity
     public DateOnly StartsAt { get; private set; }
 
     public DateOnly EndsAt { get; private set; }
+    public bool IsActive { get; private set; }
 
     public bool IsActiveOn(DateOnly day) =>
         StartsAt <= day && day <= EndsAt;
@@ -60,7 +64,8 @@ public sealed class Discount : Entity
         DiscountType discountType,
         decimal value,
         DateOnly startsAt,
-        DateOnly endsAt)
+        DateOnly endsAt,
+        bool isActive)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentOutOfRangeException.ThrowIfLessThan(value, 0m);
@@ -76,6 +81,8 @@ public sealed class Discount : Entity
             discountType,
             value,
             startsAt,
-            endsAt);
+            endsAt,
+            isActive
+            );
     }
 }

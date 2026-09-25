@@ -159,7 +159,7 @@ public sealed class HotelsController(
     public async Task<IActionResult> AddDiscount(int id, [FromBody] AddDiscountRequest request, CancellationToken cancellationToken)
     {
         var result = await addDiscount.HandleAsync(
-            new AddDiscountCommand(id, request.Name, request.DiscountType, request.Value, request.StartsAt, request.EndsAt),
+            new AddDiscountCommand(id, request.Name, request.DiscountType, request.Value, request.StartsAt, request.EndsAt, request.IsActive),
             cancellationToken);
 
         return result.IsFailure

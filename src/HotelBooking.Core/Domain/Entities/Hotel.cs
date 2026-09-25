@@ -69,9 +69,9 @@ public sealed class Hotel : AuditableEntity
     public IReadOnlyCollection<NearbyAttraction> NearbyAttractions => _nearbyAttractions;
     public IReadOnlyCollection<Discount> Discounts => _discounts;
     
-    public Discount AddDiscount(string name, DiscountType discountType, decimal value, DateOnly startsAt, DateOnly endsAt)
+    public Discount AddDiscount(string name, DiscountType discountType, decimal value, DateOnly startsAt, DateOnly endsAt, bool isActive)
     {
-        var discount = Discount.Create(name, discountType, value, startsAt, endsAt);
+        var discount = Discount.Create(name, discountType, value, startsAt, endsAt, isActive);
 
         _discounts.Add(discount);
         return discount;
