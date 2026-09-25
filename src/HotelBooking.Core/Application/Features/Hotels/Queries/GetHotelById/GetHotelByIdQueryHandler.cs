@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelById;
 
+// for admin
 public sealed class GetHotelByIdQueryHandler(
     IAppDbContext context,
     ICurrentUser currentUser)

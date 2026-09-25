@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Core.Application.Features.Hotels.Queries.GetHotelsList;
 
+// admin
 public sealed class GetHotelsListQueryHandler(
     IAppDbContext context,
     ICurrentUser currentUser,

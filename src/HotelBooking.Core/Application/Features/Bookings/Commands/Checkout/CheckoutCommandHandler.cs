@@ -7,6 +7,7 @@ using HotelBooking.Core.Application.Common.Validation;
 using HotelBooking.Core.Application.Features.Auth;
 using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Entities;
+using HotelBooking.Core.Domain.Enums;
 using HotelBooking.Core.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,6 +76,7 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
+        var today = DateOnly.FromDateTime(now);
 
         var booking = Booking.Create(
             userId,
@@ -83,8 +85,34 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
             command.Notes,
             now);
 
+        var hotel = await context.Hotels.AsNoTracking().Where(hotel => hotel.Id == roomType.HotelId).FirstOrDefaultAsync(cancellationToken);
+
+        var discount = await context.Hotels
+            .AsNoTracking()
+            .Where(h => h.Id == booking.HotelId)
+            .SelectMany(h => h.Discounts)
+            .Where(discount =>
+                discount.StartsAt <= today &&
+                discount.EndsAt >= today)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var originalPrice = roomType.PricePerNight;
+
+        var finalPrice = discount is null
+            ? originalPrice
+            : discount.DiscountType switch
+            {
+                DiscountType.Percentage =>
+                    originalPrice * (100m - discount.Value) / 100m,
+
+                DiscountType.FixedAmount =>
+                    Math.Max(originalPrice - discount.Value, 0m),
+
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
         // The price is copied into the item: tomorrow's price change never moves it.
-        booking.AddItem(roomId.Value, stay, command.Adults, command.Children, roomType.PricePerNight);
+        booking.AddItem(roomId.Value, stay, command.Adults, command.Children, finalPrice);
 
         context.Bookings.Add(booking);
 

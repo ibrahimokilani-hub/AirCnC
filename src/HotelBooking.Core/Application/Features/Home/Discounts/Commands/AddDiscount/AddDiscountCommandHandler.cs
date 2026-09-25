@@ -2,12 +2,14 @@
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Application.Abstractions.Messaging;
 using HotelBooking.Core.Application.Common.Validation;
+using HotelBooking.Core.Application.Features.Hotels;
+using HotelBooking.Core.Application.Features.Hotels.Discounts.Commands;
 using HotelBooking.Core.Domain.Common;
 using HotelBooking.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace HotelBooking.Core.Application.Features.Hotels.Discounts.Commands;
+namespace HotelBooking.Core.Application.Features.Home.Discounts.Commands.AddDiscount;
 
 public sealed class AddDiscountCommandHandler(
     IAppDbContext context,
@@ -30,7 +32,7 @@ public sealed class AddDiscountCommandHandler(
             return Result<int>.Failure(HotelErrors.NotFound(command.HotelId));
         }
 
-        var discount = hotel.AddDiscount(command.Name, Enum.Parse<DiscountType>(command.DiscountType, ignoreCase: true), command.Value, command.StartsAt, command.EndsAt);
+        var discount = hotel.AddDiscount(command.Name, Enum.Parse<DiscountType>(command.DiscountType, ignoreCase: true), command.Value, command.StartsAt, command.EndsAt, command.IsActive);
         await context.SaveChangesAsync(cancellationToken);
         
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);

@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
+using HotelBooking.Core.Application.Features.Hotels.Discounts.Commands;
 using HotelBooking.Core.Domain.Entities;
 using HotelBooking.Core.Domain.Enums;
 
-namespace HotelBooking.Core.Application.Features.Hotels.Discounts.Commands;
+namespace HotelBooking.Core.Application.Features.Home.Discounts.Commands.AddDiscount;
 
 public sealed class AddDiscountCommandValidator : AbstractValidator<AddDiscountCommand>
 {
@@ -12,6 +13,8 @@ public sealed class AddDiscountCommandValidator : AbstractValidator<AddDiscountC
         
         RuleFor(command => command.HotelId).GreaterThan(0);
         RuleFor(command => command.Name).NotEmpty().MaximumLength(Discount.NameMaxLength);
+        
+        RuleFor(command => command.Value).GreaterThanOrEqualTo(0);
 
         RuleFor(command => command.DiscountType)
             .NotEmpty()
