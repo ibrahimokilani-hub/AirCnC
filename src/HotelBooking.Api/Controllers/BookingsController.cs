@@ -4,6 +4,8 @@ using HotelBooking.Contracts.Bookings.Responses;
 using HotelBooking.Contracts.Common;
 using HotelBooking.Core.Application.Abstractions.Messaging;
 using HotelBooking.Core.Application.Features.Bookings.Commands.Checkout;
+using HotelBooking.Core.Application.Features.Bookings.Queries.GetBookingConfirmation;
+using HotelBooking.Core.Application.Features.Bookings.Queries.GetMyBookings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,9 +15,23 @@ namespace HotelBooking.Api.Controllers;
 [Route("api/v1/bookings")]
 [Tags("Bookings")]
 public sealed class BookingsController(
-    ICommandHandler<CheckoutCommand, CheckoutResponse> checkout)
+    ICommandHandler<CheckoutCommand, CheckoutResponse> checkout, 
+    IQueryHandler<GetBookingConfirmationQuery, BookingConfirmationResponse> getConfirmation,
+    IQueryHandler<GetMyBookingsQuery, PagedResult<MyBookingItem>> getMyBookings)
     : ApiController
 {
+
+    [Authorize]
+    [HttpGet("my-bookings")]
+    public async Task<IActionResult> GetMyBookings([FromQuery] FilteredRequest request, CancellationToken cancellationToken)
+    {
+        var result = await getMyBookings.HandleAsync(new GetMyBookingsQuery(request.Page, request.PageSize), cancellationToken);
+        
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : OkPaged(result.Value);
+    }
+    
     /// <summary>Books one room for one stay. The guest's details come from the logged-in account.</summary>
     /// <response code="201">Booked. "data" holds the booking id and confirmation number.</response>
     /// <response code="200">This checkout already went through; "data" is that same booking.</response>
@@ -53,5 +69,15 @@ public sealed class BookingsController(
         return result.Value.IsNew
             ? StatusCode(StatusCodes.Status201Created, new ApiResponse<CheckoutResponse>(result.Value))
             : Ok(new ApiResponse<CheckoutResponse>(result.Value));
+    }
+
+    [HttpGet("{id:int:min(1)}/confirmation")]
+    public async Task<IActionResult> GetConfirmationById(int BookingId, CancellationToken cancellationToken)
+    {
+        var result = await getConfirmation.HandleAsync(new GetBookingConfirmationQuery(BookingId), cancellationToken);
+        
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : OkData(result.Value);
     }
 }

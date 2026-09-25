@@ -44,17 +44,6 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
             return Result<CheckoutResponse>.Success(existing);
         }
 
-        // The token says who they are; this says the account still exists, so a deleted user
-        // holding a live token gets a clean 401 instead of a foreign-key violation on insert.
-        var accountExists = await context.Users
-            .AsNoTracking()
-            .AnyAsync(user => user.Id == userId, cancellationToken);
-
-        if (!accountExists)
-        {
-            return Result<CheckoutResponse>.Failure(AuthErrors.NotAuthenticated);
-        }
-
         var roomType = await context.RoomTypes
             .AsNoTracking()
             .FirstOrDefaultAsync(type => type.Id == command.RoomTypeId, cancellationToken);
