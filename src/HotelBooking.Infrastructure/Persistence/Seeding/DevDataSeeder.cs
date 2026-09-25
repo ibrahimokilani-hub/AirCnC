@@ -62,6 +62,7 @@ public sealed class DevDataSeeder(
             AdminEmail,
             "Ada",
             "Admin",
+            "+970 599 000 001",
             UserRole.Admin,
             cancellationToken);
 
@@ -69,6 +70,7 @@ public sealed class DevDataSeeder(
             GuestEmail,
             "Gus",
             "Guest",
+            "+970 599 000 002",
             UserRole.User,
             cancellationToken);
     }
@@ -77,6 +79,7 @@ public sealed class DevDataSeeder(
         string email,
         string firstName,
         string lastName,
+        string phone,
         UserRole role,
         CancellationToken cancellationToken)
     {
@@ -91,6 +94,7 @@ public sealed class DevDataSeeder(
             email,
             firstName,
             lastName,
+            phone,
             passwordHasher.Hash("test123"),
             timeProvider.GetUtcNow().UtcDateTime);
 

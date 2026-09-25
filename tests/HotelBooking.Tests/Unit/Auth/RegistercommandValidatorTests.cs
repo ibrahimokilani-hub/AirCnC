@@ -6,7 +6,7 @@ public sealed class RegisterCommandValidatorTests
 {
     private readonly RegisterCommandValidator _validator = new();
 
-    private static RegisterCommand Valid() => new("sara@example.com", "Passw0rdOk", "Sara", "Haddad");
+    private static RegisterCommand Valid() => new("sara@example.com", "Passw0rdOk", "Sara", "Haddad", "+970 599 123 456");
 
     /// <summary>The names of the properties that have at least one error.</summary>
     private string[] FailedProperties(RegisterCommand command) =>
@@ -39,5 +39,14 @@ public sealed class RegisterCommandValidatorTests
     public void Validate_BlankFirstName_HasFirstNameError()
     {
         Assert.Contains(nameof(RegisterCommand.FirstName), FailedProperties(Valid() with { FirstName = " " }));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not a phone")]
+    [InlineData("12345")]
+    public void Validate_BadPhone_HasPhoneError(string phone)
+    {
+        Assert.Contains(nameof(RegisterCommand.Phone), FailedProperties(Valid() with { Phone = phone }));
     }
 }

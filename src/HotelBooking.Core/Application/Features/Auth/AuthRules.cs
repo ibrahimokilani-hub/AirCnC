@@ -13,6 +13,12 @@ public static class AuthRules
         => rule.NotEmpty().WithMessage("{PropertyName} is required.") 
             .MaximumLength(User.NameMaxLength);
     
+    public static IRuleBuilderOptions<T, string> ValidPhone<T>(this IRuleBuilder<T, string> rule) => rule
+        .NotEmpty().WithMessage("Phone number is required.")
+        .MaximumLength(User.PhoneMaxLength)
+        .Matches(@"^\+?[0-9 ]{7,20}$")
+        .WithMessage("Enter a phone number with digits only, like +970 599 123 456.");
+
     public static IRuleBuilderOptions<T, string> ValidPassword<T>(this IRuleBuilder<T, string> rule) => rule
         .NotEmpty().WithMessage("Password is required.")
         .MinimumLength(6);

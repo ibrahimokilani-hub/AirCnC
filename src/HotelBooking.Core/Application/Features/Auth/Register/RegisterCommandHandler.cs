@@ -34,6 +34,7 @@ public sealed class RegisterCommandHandler(
             email,
             command.FirstName,
             command.LastName,
+            command.Phone,
             passwordHasher.Hash(command.Password),
             timeProvider.GetUtcNow().UtcDateTime);
 

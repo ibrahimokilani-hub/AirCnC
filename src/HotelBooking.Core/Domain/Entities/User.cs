@@ -8,12 +8,14 @@ public sealed class User : Entity
     public const int EmailMaxLength = 256;
     public const int NameMaxLength = 100;
     public const int PasswordHashMaxLength = 200;
+    public const int PhoneMaxLength = 30;
 
-    User(string email, string firstName, string lastName, string passwordHash, UserRole role, DateTime createdAtUtc)
+    User(string email, string firstName, string lastName, string phone, string passwordHash, UserRole role, DateTime createdAtUtc)
     {
         Email = email;
         FirstName = firstName;
         LastName = lastName;
+        Phone = phone;
         PasswordHash = passwordHash;
         Role = role;
         CreatedAtUtc = createdAtUtc;
@@ -25,20 +27,23 @@ public sealed class User : Entity
 
     public string LastName { get; set; }
 
+    public string Phone { get; set; }
+
     public string PasswordHash { get; set; }
 
     public UserRole Role { get; set; }
 
     public DateTime CreatedAtUtc { get; set; }
 
-       public static User Create(string email, string firstName, string lastName, string passwordHash, DateTime createdAtUtc)
+       public static User Create(string email, string firstName, string lastName, string phone, string passwordHash, DateTime createdAtUtc)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
         ArgumentException.ThrowIfNullOrWhiteSpace(firstName);
         ArgumentException.ThrowIfNullOrWhiteSpace(lastName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(phone);
         ArgumentException.ThrowIfNullOrWhiteSpace(passwordHash);
 
-        return new User(email.Trim().ToLowerInvariant(), firstName.Trim(), lastName.Trim(), passwordHash, UserRole.User, createdAtUtc);
+        return new User(email.Trim().ToLowerInvariant(), firstName.Trim(), lastName.Trim(), phone.Trim(), passwordHash, UserRole.User, createdAtUtc);
     }
 
 }

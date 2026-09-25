@@ -35,7 +35,7 @@ public sealed class AuthController(
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        var command = new RegisterCommand(request.Email, request.Password, request.FirstName, request.LastName);
+        var command = new RegisterCommand(request.Email, request.Password, request.FirstName, request.LastName, request.Phone);
 
         var result = await register.HandleAsync(command, cancellationToken);
 
