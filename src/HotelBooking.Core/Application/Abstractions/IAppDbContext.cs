@@ -12,6 +12,7 @@ public interface IAppDbContext
     DbSet<Room> Rooms { get; }
     DbSet<Amenity> Amenities { get; }
     DbSet<BookingItem> BookingItems { get; }
+    DbSet<Booking> Bookings { get; }
     DbSet<NearbyAttraction> NearbyAttractions { get; }
     
     

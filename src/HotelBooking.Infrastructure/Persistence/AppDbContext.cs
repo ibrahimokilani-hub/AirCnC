@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Amenity> Amenities => Set<Amenity>();
     public DbSet<BookingItem> BookingItems => Set<BookingItem>();
+    public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<NearbyAttraction> NearbyAttractions => Set<NearbyAttraction>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
