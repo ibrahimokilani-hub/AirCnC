@@ -10,5 +10,6 @@ public sealed record CreateHotelCommand(
     string HotelType,
     string Address,
     decimal Latitude,
-    decimal Longitude)
+    decimal Longitude,
+    string? HotelImageUrl)
     : ICommand<int>;

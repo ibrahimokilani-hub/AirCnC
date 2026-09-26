@@ -56,6 +56,7 @@ public sealed class GetHotelsListQueryHandler(
                 hotel.StarRating,
                 hotel.Owner.FirstName + " " + hotel.Owner.LastName,
                 hotel.HotelType.ToString(),
+                hotel.HotelImageUrl,
                 hotel.Rooms.Count,
                 hotel.CreatedAtUtc,
                 hotel.UpdatedAtUtc))

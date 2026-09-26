@@ -8,4 +8,5 @@ public sealed record HotelRequest(
     string HotelType,
     string Address,
     decimal Latitude,
-    decimal Longitude);
+    decimal Longitude,
+    string? HotelImageUrl);

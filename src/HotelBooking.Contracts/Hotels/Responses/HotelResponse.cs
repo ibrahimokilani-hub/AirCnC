@@ -13,4 +13,5 @@ public sealed record HotelResponse(
     string Address,
     decimal Latitude,
     decimal Longitude,
+    string? HotelImageUrl,
     IReadOnlyList<int> AmenityIds);

@@ -41,7 +41,8 @@ public sealed class CreateHotelCommandHandler(
             Enum.Parse<HotelType>(command.HotelType, ignoreCase: true),
             command.Address,
             command.Latitude,
-            command.Longitude);
+            command.Longitude,
+            command.HotelImageUrl);
 
         context.Hotels.Add(hotel);
         await context.SaveChangesAsync(cancellationToken);

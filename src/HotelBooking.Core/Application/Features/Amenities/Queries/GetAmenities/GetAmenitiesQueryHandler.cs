@@ -17,7 +17,7 @@ public sealed class GetAmenitiesQueryHandler(IAppDbContext context)
         var amenities = await context.Amenities
             .AsNoTracking()
             .OrderBy(amenity => amenity.Name)
-            .Select(amenity => new AmenityResponse(amenity.Id, amenity.Name))
+            .Select(amenity => new AmenityResponse(amenity.Id, amenity.Name, amenity.AmenityImageUrl))
             .ToListAsync(cancellationToken);
 
         return Result<IReadOnlyList<AmenityResponse>>.Success(amenities);

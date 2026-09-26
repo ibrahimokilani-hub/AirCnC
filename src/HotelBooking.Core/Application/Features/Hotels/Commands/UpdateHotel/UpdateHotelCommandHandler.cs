@@ -48,7 +48,8 @@ public sealed class UpdateHotelCommandHandler(
             Enum.Parse<HotelType>(command.HotelType, ignoreCase: true),
             command.Address,
             command.Latitude,
-            command.Longitude);
+            command.Longitude,
+            command.HotelImageUrl);
 
         await context.SaveChangesAsync(cancellationToken);
 

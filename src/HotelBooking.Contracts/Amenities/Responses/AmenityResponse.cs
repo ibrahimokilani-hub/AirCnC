@@ -1,3 +1,3 @@
 ﻿namespace HotelBooking.Contracts.Amenities.Responses;
 
-public sealed record AmenityResponse(int Id, string Name);
+public sealed record AmenityResponse(int Id, string Name, string? AmenityImageUrl);

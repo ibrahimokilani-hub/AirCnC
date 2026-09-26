@@ -38,6 +38,7 @@ public sealed class GetHotelByIdQueryHandler(
                 hotel.Address,
                 hotel.Latitude,
                 hotel.Longitude,
+                hotel.HotelImageUrl,
                 hotel.Amenities.Select(am => am.Id).ToList()))
             .FirstOrDefaultAsync(cancellationToken);
 

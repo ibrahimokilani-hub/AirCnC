@@ -7,5 +7,6 @@ public sealed record AddNearbyAttractionCommand(
     string Name,
     string Category,
     decimal Latitude,
-    decimal Longitude)
+    decimal Longitude,
+    string? AttractionImageUrl)
     : ICommand<int>;

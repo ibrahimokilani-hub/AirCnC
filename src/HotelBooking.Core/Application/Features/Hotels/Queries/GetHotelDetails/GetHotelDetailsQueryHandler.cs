@@ -27,6 +27,7 @@ public sealed class GetHotelDetailsQueryHandler(IAppDbContext context)
                 hotel.Address,
                 hotel.Latitude,
                 hotel.Longitude,
+                hotel.HotelImageUrl,
                 hotel.Amenities
                     .OrderBy(amenity => amenity.Name)
                     .Select(amenity => amenity.Name)
@@ -39,7 +40,8 @@ public sealed class GetHotelDetailsQueryHandler(IAppDbContext context)
                         attraction.Category,
                         attraction.Latitude,
                         attraction.Longitude,
-                        attraction.DistanceMeters))
+                        attraction.DistanceMeters,
+                        attraction.AttractionImageUrl))
                     .ToList(),
                 context.Reviews.Where(r => r.HotelId == hotel.Id).Average(r => (double?)r.Rating),
                 context.Reviews.Count(r => r.HotelId == hotel.Id)))

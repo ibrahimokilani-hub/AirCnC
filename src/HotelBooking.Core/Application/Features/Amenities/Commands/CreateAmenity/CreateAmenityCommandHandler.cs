@@ -28,7 +28,7 @@ public sealed class CreateAmenityCommandHandler(
             return Result<int>.Failure(AmenityErrors.AlreadyExists(name));
         }
 
-        var amenity = Amenity.Create(name);
+        var amenity = Amenity.Create(name, command.AmenityImageUrl);
 
         context.Amenities.Add(amenity);
         await context.SaveChangesAsync(cancellationToken);

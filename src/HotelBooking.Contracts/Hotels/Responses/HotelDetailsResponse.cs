@@ -11,6 +11,7 @@ public sealed record HotelDetailsResponse(
     string Address,
     decimal Latitude,
     decimal Longitude,
+    string? HotelImageUrl,
     IReadOnlyList<string> Amenities,
     IReadOnlyList<NearbyAttractionResponse> NearbyAttractions,
     double? AverageRating,
@@ -22,4 +23,5 @@ public sealed record NearbyAttractionResponse(
     string Category,
     decimal Latitude,
     decimal Longitude,
-    int DistanceMeters);
+    int DistanceMeters,
+    string? AttractionImageUrl);

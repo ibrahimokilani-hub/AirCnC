@@ -11,5 +11,6 @@ public sealed record UpdateHotelCommand(
     string HotelType,
     string Address,
     decimal Latitude,
-    decimal Longitude)
+    decimal Longitude,
+    string? HotelImageUrl)
     : ICommand;

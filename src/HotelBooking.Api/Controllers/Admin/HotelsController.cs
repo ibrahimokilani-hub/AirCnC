@@ -60,7 +60,7 @@ public sealed class HotelsController(
     {
         var command = new CreateHotelCommand(
             request.CityId, request.Name, request.Description, request.StarRating,
-            request.HotelType, request.Address, request.Latitude, request.Longitude);
+            request.HotelType, request.Address, request.Latitude, request.Longitude, request.HotelImageUrl);
 
         var result = await createHotel.HandleAsync(command, cancellationToken);
 
@@ -91,7 +91,7 @@ public sealed class HotelsController(
     {
         var command = new UpdateHotelCommand(
             id, request.CityId, request.Name, request.Description, request.StarRating,
-            request.HotelType, request.Address, request.Latitude, request.Longitude);
+            request.HotelType, request.Address, request.Latitude, request.Longitude, request.HotelImageUrl);
 
         var result = await updateHotel.HandleAsync(command, cancellationToken);
 
@@ -129,7 +129,7 @@ public sealed class HotelsController(
         [FromBody] NearbyAttractionRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new AddNearbyAttractionCommand(id, request.Name, request.Category, request.Latitude, request.Longitude);
+        var command = new AddNearbyAttractionCommand(id, request.Name, request.Category, request.Latitude, request.Longitude, request.AttractionImageUrl);
 
         var result = await addNearbyAttraction.HandleAsync(command, cancellationToken);
 

@@ -33,7 +33,7 @@ public sealed class AddNearbyAttractionCommandHandler(
             return Result<int>.Failure(HotelErrors.NotFound(command.HotelId));
         }
 
-        var attraction = hotel.AddNearbyAttraction(command.Name, command.Category, command.Latitude, command.Longitude);
+        var attraction = hotel.AddNearbyAttraction(command.Name, command.Category, command.Latitude, command.Longitude, command.AttractionImageUrl);
         await context.SaveChangesAsync(cancellationToken);
 
         return Result<int>.Success(attraction.Id);

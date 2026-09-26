@@ -38,7 +38,7 @@ public sealed class AmenitiesController(
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create([FromBody] AmenityRequest request, CancellationToken cancellationToken)
     {
-        var result = await createAmenity.HandleAsync(new CreateAmenityCommand(request.Name), cancellationToken);
+        var result = await createAmenity.HandleAsync(new CreateAmenityCommand(request.Name, request.AmenityImageUrl), cancellationToken);
 
         return result.IsFailure
             ? HandleFailure(result.Error!)
