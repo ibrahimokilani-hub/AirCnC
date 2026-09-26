@@ -2,7 +2,8 @@
 
 A hotel booking REST API built with **.NET 10** and **Clean Architecture**. Guests search hotels, book rooms and manage their bookings; admins manage cities, hotels, room types, rooms and amenities.
 
-> 🚧 Work in progress: an internship final project, built increment by increment.
+[Example guidance taken from](https://medium.com/@mohanedzekry/clean-architecture-in-asp-net-core-web-api-d44e33893e1d)
+
 
 ## Table of Contents
 
@@ -29,6 +30,8 @@ A hotel booking REST API built with **.NET 10** and **Clean Architecture**. Gues
 - **Auditing and soft delete**: created/updated by and at are set automatically; deleted rows are hidden, not removed
 - **Structured logging** with Serilog
 - **Global exception handling**: unexpected errors become a logged `500` with the same error shape
+- **Idempotent checkout**: a client `Idempotency-Key` makes a retried booking safe — the same key returns the original booking, never a second one
+- **Featured deals**: admins add percentage or fixed-amount discounts; the public home page ranks the active ones, **cached in Redis**
 
 ### Response format
 
@@ -49,6 +52,7 @@ A hotel booking REST API built with **.NET 10** and **Clean Architecture**. Gues
 |---|---|
 | Framework | .NET 10, ASP.NET Core (controllers) |
 | Database | SQL Server 2022 (Docker), EF Core 10 |
+| Cache | Redis via `IDistributedCache` (optional — falls back to in-process) |
 | Auth | JWT bearer + refresh tokens, PBKDF2 hashing |
 | Validation | FluentValidation |
 | Logging | Serilog |
@@ -110,10 +114,20 @@ dotnet run --project src/HotelBooking.Api
 
 Swagger: http://localhost:5209/swagger
 
-> **Sample data (Development only):** run with `-- --reseed` to migrate and seed demo cities, hotels, rooms and an admin account in one go:
+> **Sample data (Development only):** run with `-- --reseed` to migrate and seed demo cities, hotels, rooms, discounts and an admin account in one go:
 > ```bash
 > dotnet run --project src/HotelBooking.Api -- --reseed
 > ```
+
+### Optional: Redis for caching
+
+The featured-deals cache uses Redis when a Redis connection string is configured, and an in-process cache otherwise — **presence of the connection string is the switch**, there is no on/off flag. `docker compose up -d` already starts a Redis container next to SQL Server; point the app at it in user-secrets:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:Redis" "localhost:6379" --project src/HotelBooking.Api
+```
+
+Leave it unset to run the cache in-process — fine for a single instance, and what the tests do.
 
 ## API Endpoints
 
@@ -160,6 +174,8 @@ Common errors: `400` invalid input · `401` bad credentials / expired or revoked
 | `PUT` | `/admin/hotels/{id}/amenities` | Admin | Replace the hotel's amenity set | `204` |
 | `POST` | `/admin/hotels/{id}/attractions` | Authenticated | **Add a map pin;** distance from the hotel is computed and stored | `201` |
 | `DELETE` | `/admin/hotels/{id}/attractions/{attractionId}` | Authenticated | Remove a map pin | `204` |
+| `POST` | `/admin/hotels/{id}/discounts` | Admin | **Add a discount** (percentage or fixed amount); it feeds featured deals while active | `201` |
+| `DELETE` | `/admin/hotels/{id}/discounts/{discountId}` | Admin | Remove a discount | `204` |
 | `DELETE` | `/admin/hotels/{id}` | Admin | Soft delete | `204` |
 
 ### Room types (admin)
@@ -188,13 +204,26 @@ Nested under a hotel; the ownership check runs on the parent hotel.
 |---|---|---|---|---|
 | `GET` | `/admin/users` | Admin | Paged list (`pageSize` defaults to **20**) | `200` |
 
-### Hotels & search (public)
+### Bookings
+
+The signed-in guest's own bookings; the API takes the user from the token, so no user id is ever sent and another user's booking answers `404` (not `403`).
+
+| Method | Route | Auth | Description | Success |
+|---|---|---|---|---|
+| `POST` | `/bookings` | Authenticated | **Checkout.** Books the rooms in the request as one booking, one hotel. Requires an `Idempotency-Key` header | `201` new · `200` on a replayed key |
+| `GET` | `/bookings/my-bookings` | Authenticated | My bookings, newest first (paged) | `200` |
+| `GET` | `/bookings/{id}/confirmation` | Authenticated | One booking's confirmation page — only if it's mine | `200` |
+
+Checkout errors: `400` unknown room type, guests that don't fit, past/out-of-order dates, or a missing `Idempotency-Key` · `409` a room type sold out for those dates.
+
+### Hotels, search & home (public)
 
 | Method | Route | Auth | Description | Success |
 |---|---|---|---|---|
 | `GET` | `/hotels/{id}` | Anonymous | The guest hotel page: details, amenities and **nearby attraction pins** | `200` |
 | `GET` | `/hotels/{id}/rooms` | Anonymous | Each room type with its price and **how many rooms are free** for the dates | `200` |
 | `GET` | `/search/hotels` | Anonymous | Hotels with enough free rooms for the guests and dates, filtered and sorted | `200` |
+| `GET` | `/home/featured-deals` | Anonymous | Up to 5 hotels with an active discount, best saving first. Cached ~5 min | `200` |
 
 Common errors across the API: `400` validation · `401` no/expired token · `403` wrong role · `404` not found · `409` conflict.
 
@@ -254,11 +283,11 @@ dotnet test
 - [x] Authentication: own user, PBKDF2, JWT, roles, refresh tokens
 - [x] Catalog: hotels, room types, rooms, amenities
 - [x] Search and the public hotel page (availability, nearby attractions)
-- [ ] Cart, checkout, bookings
-- [ ] Home page and reviews
+- [x] Checkout and bookings (idempotent), confirmation, my bookings
+- [x] Home page — featured deals + discounts (Redis cache) · ⏳ recently visited, trending, reviews
 - [ ] Own mediator (ISender) and pipeline behaviors
 - [ ] Concurrency: no double-booking
-- [ ] Images (Cloudinary), confirmation email, PDF invoice
+- [ ] Images, confirmation email, PDF invoice
 - [ ] Seq, health checks, Docker image, CI
 
 # Deep Dives
@@ -303,26 +332,26 @@ sequenceDiagram
 
 The access token is short-lived and never touches the database; the refresh token is stored so it can be checked on refresh and revoked on logout. **Token rotation** — issuing a *new* refresh token on every use — is the next hardening step (see notes below).
 
-## Availability: why `Expression<Func<Room, bool>>`, not `Func<Room, bool>`
 
-"Is this room free during the stay?" is defined once, in `RoomAvailability.IsFreeDuring`, and reused by the search, the public room-availability query and the admin rooms grid:
+## Idempotent checkout: one booking per key, however many retries
 
-```csharp
-public static Expression<Func<Room, bool>> IsFreeDuring(DateRange stay) =>
-    room => !room.BookingItems.Any(item =>
-        item.IsActive &&
-        item.CheckIn < stay.CheckOut &&
-        stay.CheckIn < item.CheckOut);
-```
+A network drops after the booking is saved but before the response arrives; the app retries. Without protection, that's a second booking for the same room. The fix is an **idempotency key** the *client* owns:
 
-The return type is an **`Expression<>`**, a description of the code as data, not a compiled `Func<>` delegate. That distinction is what lets the count run **in the database**:
+- The client mints one GUID per checkout attempt and sends it as an `Idempotency-Key` header. Every retry of that attempt carries the **same** key.
+- The API stores the key on the booking (a unique column). On checkout it first looks for a booking with that key: found → return the original (`200`, `isNew: false`); not found → create it (`201`, `isNew: true`).
+- So a double-click, a retried request after a timeout, or a resubmitted form all resolve to the **one** booking that key created.
 
-```csharp
-var freeRooms = context.Rooms.Where(RoomAvailability.IsFreeDuring(stay));
-freeRooms.Count(room => room.RoomTypeId == roomType.Id)
-```
+The key must be minted **once, by the caller**, and frozen for the life of the attempt. Generating it server-side per request would defeat the whole point — every retry would look new.
 
-EF Core reads the expression **tree** and translates it into SQL, so the overlap check and the count become a single query that runs on the server and returns just the numbers. A `Func<>` delegate is opaque compiled IL, EF cannot translate it, so it would either throw or fall back to **client-side evaluation**: pulling every room and every booking into memory and counting in C#. On a real dataset that is the difference between one indexed `COUNT(*)` and loading the whole table. Passing the predicate as an `Expression` keeps one definition of "free" and lets the database do the counting.
+## Caching featured deals in Redis
+
+The home page's featured deals are the same for every visitor and change rarely — the textbook case for a cache. The handler wraps the query in a get-or-create against `IDistributedCache`:
+
+- **Key** includes today's date (`home:featured-deals:20260925`), so a deal that ends tonight can't be served tomorrow — tomorrow's first request is a miss by construction.
+- **TTL** ~5 minutes. Adding or removing a discount clears **today's key** so the change shows on the next load.
+- **Where it lives:** Redis when `ConnectionStrings:Redis` is set (shared across instances), an in-process cache otherwise. Callers only ever see `IDistributedCache`, so which one is behind it changes no code.
+
+Deliberately simple (decision **D-25**): one cache tier, one TTL, invalidate by key — no in-process L1, no cache tags, no on/off flag.
 
 ---
 
@@ -346,7 +375,10 @@ In simple terms its like a key defense that every time someone uses a refresh to
 
 1. Issue a new access token and a new refresh token
 2. Mark the old refresh token as “used”
-3. If a used token is presented again, someone is replaying it and you should revoke the entire token family
 
 #### Why storing in Unicode?
 - used for storing cryptographic hashes (like SHA-256), which are always a predictable string of alphanumeric characters and fixed in length.
+-----
+# Tests
+### Unit tests
+- Used AI to generate unit tests.
