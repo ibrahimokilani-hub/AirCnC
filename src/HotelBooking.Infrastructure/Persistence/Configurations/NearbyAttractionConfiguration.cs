@@ -1,4 +1,4 @@
-﻿using HotelBooking.Core.Domain.Entities;
+using HotelBooking.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,10 +16,5 @@ public sealed class NearbyAttractionConfiguration : IEntityTypeConfiguration<Nea
         builder.Property(attraction => attraction.Category).IsRequired().HasMaxLength(NearbyAttraction.CategoryMaxLength);
         builder.Property(attraction => attraction.Latitude).HasPrecision(9, 6);
         builder.Property(attraction => attraction.Longitude).HasPrecision(9, 6);
-
-        builder.HasOne<Hotel>()
-            .WithMany(hotel => hotel.NearbyAttractions)
-            .HasForeignKey(attraction => attraction.HotelId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

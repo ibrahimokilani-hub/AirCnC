@@ -20,8 +20,8 @@ public sealed class DevDataSeeder(
     public const string GuestEmail = "guest@hotelbooking.local";
 
     /// <summary>
-    /// Three real pins per city, keyed by city name. A hotel gets the pins of the city
-    /// it sits in; the distance to each one is computed by the entity when it is added.
+    /// Real landmarks grouped by city, used to seed the standalone attraction catalog.
+    /// They are not tied to any hotel — the grouping is only for readable coordinates.
     /// </summary>
     private static readonly Dictionary<string, (string Name, string Category, decimal Latitude, decimal Longitude)[]> Attractions =
         new()
@@ -68,6 +68,7 @@ public sealed class DevDataSeeder(
         await SeedCitiesAsync(cancellationToken);
         await SeedAmenitiesAsync(cancellationToken);
         await SeedHotelsAsync(cancellationToken);
+        await SeedNearbyAttractionsAsync(cancellationToken);
     }
 
     private async Task SeedUsersAsync(
@@ -292,8 +293,6 @@ public sealed class DevDataSeeder(
                 amenities["Air Conditioning"]
             ]);
 
-            AddAttractions(hotel, city.Name);
-
             AddDiscount(hotel, name);
 
             context.Hotels.Add(hotel);
@@ -309,26 +308,29 @@ public sealed class DevDataSeeder(
     }
 
     /// <summary>
-    /// Pins are added to the aggregate before it is saved, so EF inserts them with the
-    /// hotel and fills in their HotelId. A city we have no pins for is left alone.
+    /// Fills the standalone attraction catalog. Additive and idempotent: skipped once any
+    /// attraction exists. No hotel involved — these rows stand on their own.
     /// </summary>
-    private static void AddAttractions(
-        Hotel hotel,
-        string cityName)
+    private async Task SeedNearbyAttractionsAsync(
+        CancellationToken cancellationToken)
     {
-        if (!Attractions.TryGetValue(cityName, out var attractions))
+        if (await context.NearbyAttractions.AnyAsync(cancellationToken))
         {
             return;
         }
 
-        foreach (var (name, category, latitude, longitude) in attractions)
+        foreach (var landmarks in Attractions.Values)
         {
-            hotel.AddNearbyAttraction(
-                name,
-                category,
-                latitude,
-                longitude);
+            foreach (var (name, category, latitude, longitude) in landmarks)
+            {
+                context.NearbyAttractions.Add(
+                    NearbyAttraction.Create(name, category, latitude, longitude));
+            }
         }
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Seeded standalone attraction catalog.");
     }
 
     /// <summary>

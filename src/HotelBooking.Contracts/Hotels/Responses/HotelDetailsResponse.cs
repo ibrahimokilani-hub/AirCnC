@@ -1,4 +1,4 @@
-﻿namespace HotelBooking.Contracts.Hotels.Responses;
+namespace HotelBooking.Contracts.Hotels.Responses;
 
 public sealed record HotelDetailsResponse(
     int Id,
@@ -13,15 +13,5 @@ public sealed record HotelDetailsResponse(
     decimal Longitude,
     string? HotelImageUrl,
     IReadOnlyList<string> Amenities,
-    IReadOnlyList<NearbyAttractionResponse> NearbyAttractions,
     double? AverageRating,
     int ReviewsCount);
-
-public sealed record NearbyAttractionResponse(
-    int Id,
-    string Name,
-    string Category,
-    decimal Latitude,
-    decimal Longitude,
-    int DistanceMeters,
-    string? AttractionImageUrl);
