@@ -11,7 +11,9 @@ public static class LoggingExtensions
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
             .Enrich.FromLogContext()
-            .WriteTo.File("logs/hotelLogs.txt", rollingInterval: RollingInterval.Day));
+            .WriteTo.File("logs/hotelLogs.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.Console()
+        );
 
         return builder;
     }
