@@ -7,8 +7,10 @@ public sealed class RoomType : AuditableEntity
     public const int NameMaxLength = 100;
     public const int DescriptionMaxLength = 1000;
     public const int MaxGuestsPerRoom = 10;
+    
+    private readonly List<RoomTypeImage> _images = [];
 
-    private RoomType(int hotelId, string name, string description, decimal pricePerNight, int maxAdults, int maxChildren, string? roomTypeImageUrl = null)
+    private RoomType(int hotelId, string name, string description, decimal pricePerNight, int maxAdults, int maxChildren)
     {
         HotelId = hotelId;
         Name = name;
@@ -16,7 +18,6 @@ public sealed class RoomType : AuditableEntity
         PricePerNight = pricePerNight;
         MaxAdults = maxAdults;
         MaxChildren = maxChildren;
-        RoomTypeImageUrl = roomTypeImageUrl?.Trim();
     }
 
     public int HotelId { get; private set; }
@@ -30,7 +31,18 @@ public sealed class RoomType : AuditableEntity
     public int MaxAdults { get; private set; }
 
     public int MaxChildren { get; private set; }
-    public string? RoomTypeImageUrl { get; private set; }
+    
+    public IReadOnlyCollection<RoomTypeImage> RoomTypeImages => _images;
+
+    /// <summary>Adds one image to the room type's gallery.</summary>
+    public RoomTypeImage AddImage(string imageUrl)
+    {
+        var image = RoomTypeImage.Create(Id, imageUrl);
+
+        _images.Add(image);
+        return image;
+    }
+
 
     public static RoomType Create(
         int hotelId,
@@ -38,15 +50,15 @@ public sealed class RoomType : AuditableEntity
         string description,
         decimal pricePerNight,
         int maxAdults,
-        int maxChildren, string? roomTypeImageUrl = null)
+        int maxChildren)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hotelId);
         Guard(name, pricePerNight, maxAdults, maxChildren);
 
-        return new RoomType(hotelId, name.Trim(), description.Trim(), pricePerNight, maxAdults, maxChildren, roomTypeImageUrl?.Trim());
+        return new RoomType(hotelId, name.Trim(), description.Trim(), pricePerNight, maxAdults, maxChildren);
     }
 
-    public void Update(string name, string description, decimal pricePerNight, int maxAdults, int maxChildren, string? roomTypeImageUrl = null)
+    public void Update(string name, string description, decimal pricePerNight, int maxAdults, int maxChildren)
     {
         Guard(name, pricePerNight, maxAdults, maxChildren);
 
@@ -55,7 +67,6 @@ public sealed class RoomType : AuditableEntity
         PricePerNight = pricePerNight;
         MaxAdults = maxAdults;
         MaxChildren = maxChildren;
-        RoomTypeImageUrl = roomTypeImageUrl?.Trim();
     }
 
     public bool Fits(int adults, int children) => adults <= MaxAdults && children <= MaxChildren;

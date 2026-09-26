@@ -14,6 +14,8 @@ public interface IAppDbContext
     DbSet<BookingItem> BookingItems { get; }
     DbSet<Booking> Bookings { get; }
     DbSet<NearbyAttraction> NearbyAttractions { get; }
+    DbSet<HotelImage> HotelImages { get; }
+    DbSet<RoomTypeImage> RoomTypeImages { get; }
     DbSet<Discount> Discounts { get; }
     DbSet<Review> Reviews { get; }
     

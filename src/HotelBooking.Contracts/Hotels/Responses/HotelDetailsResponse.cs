@@ -1,3 +1,5 @@
+using HotelBooking.Contracts.Common;
+
 namespace HotelBooking.Contracts.Hotels.Responses;
 
 public sealed record HotelDetailsResponse(
@@ -13,5 +15,6 @@ public sealed record HotelDetailsResponse(
     decimal Longitude,
     string? HotelImageUrl,
     IReadOnlyList<string> Amenities,
+    IReadOnlyList<ImageResponse> Images,
     double? AverageRating,
     int ReviewsCount);

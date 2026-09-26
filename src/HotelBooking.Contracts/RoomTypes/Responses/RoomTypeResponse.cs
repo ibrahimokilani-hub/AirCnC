@@ -1,4 +1,6 @@
-﻿namespace HotelBooking.Contracts.RoomTypes.Responses;
+using HotelBooking.Contracts.Common;
+
+namespace HotelBooking.Contracts.RoomTypes.Responses;
 
 public sealed record RoomTypeResponse(
     int Id,
@@ -6,4 +8,5 @@ public sealed record RoomTypeResponse(
     string Description,
     decimal PricePerNight,
     int MaxAdults,
-    int MaxChildren);
+    int MaxChildren,
+    IReadOnlyList<ImageResponse> Images);

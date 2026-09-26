@@ -3,8 +3,10 @@ using HotelBooking.Contracts.Home.Requests;
 using HotelBooking.Contracts.Hotels.Requests;
 using HotelBooking.Contracts.Hotels.Responses;
 using HotelBooking.Core.Application.Abstractions.Messaging;
+using HotelBooking.Core.Application.Features.Hotels.Commands.AddHotelImage;
 using HotelBooking.Core.Application.Features.Hotels.Commands.CreateHotel;
 using HotelBooking.Core.Application.Features.Hotels.Commands.DeleteHotel;
+using HotelBooking.Core.Application.Features.Hotels.Commands.RemoveHotelImage;
 using HotelBooking.Core.Application.Features.Hotels.Commands.SetHotelAmenities;
 using HotelBooking.Core.Application.Features.Hotels.Commands.UpdateHotel;
 using HotelBooking.Core.Application.Features.Hotels.Discounts.Commands;
@@ -27,7 +29,9 @@ public sealed class HotelsController(
     IQueryHandler<GetHotelsListQuery, PagedResult<HotelListItem>> getHotelsList,
     ICommandHandler<SetHotelAmenitiesCommand> setHotelAmenities,
     ICommandHandler<AddDiscountCommand, int> addDiscount,
-    ICommandHandler<RemoveDiscountCommand> removeDiscount)
+    ICommandHandler<RemoveDiscountCommand> removeDiscount,
+    ICommandHandler<AddHotelImageCommand, int> addHotelImage,
+    ICommandHandler<RemoveHotelImageCommand> removeHotelImage)
     : ApiController
 {
     /// <summary>The admin grid: paged, searchable by name, owner or city, sortable.</summary>
@@ -138,6 +142,36 @@ public sealed class HotelsController(
     public async Task<IActionResult> RemoveDiscount(int id, int discountId, CancellationToken cancellationToken)
     {
         var result = await removeDiscount.HandleAsync(new RemoveDiscountCommand(id, discountId), cancellationToken);
+
+        return result.IsFailure ? HandleFailure(result.Error!) : NoContent();
+    }
+
+    /// <summary>Adds an image to the hotel's gallery.</summary>
+    /// <response code="201">Added. "data" holds the image id.</response>
+    /// <response code="400">Missing or too-long image URL.</response>
+    /// <response code="404">No such hotel, or it isn't yours.</response>
+    [HttpPost("{id:int:min(1)}/images")]
+    [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddImage(int id, [FromBody] ImageRequest request, CancellationToken cancellationToken)
+    {
+        var result = await addHotelImage.HandleAsync(new AddHotelImageCommand(id, request.ImageUrl), cancellationToken);
+
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : StatusCode(StatusCodes.Status201Created, new ApiResponse<IdResponse>(new IdResponse(result.Value)));
+    }
+
+    /// <summary>Removes an image from the hotel's gallery.</summary>
+    /// <response code="204">Removed.</response>
+    /// <response code="404">No such image on this hotel, or the hotel isn't yours.</response>
+    [HttpDelete("{id:int:min(1)}/images/{imageId:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveImage(int id, int imageId, CancellationToken cancellationToken)
+    {
+        var result = await removeHotelImage.HandleAsync(new RemoveHotelImageCommand(id, imageId), cancellationToken);
 
         return result.IsFailure ? HandleFailure(result.Error!) : NoContent();
     }

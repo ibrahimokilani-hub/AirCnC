@@ -26,5 +26,10 @@ public sealed class RoomTypeConfiguration : IEntityTypeConfiguration<RoomType>
             .WithMany(hotel => hotel.RoomTypes)
             .HasForeignKey(roomType => roomType.HotelId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasMany(rt => rt.RoomTypeImages)
+            .WithOne()
+            .HasForeignKey(image => image.RoomTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -1,3 +1,4 @@
+using HotelBooking.Contracts.Common;
 using HotelBooking.Contracts.Hotels.Responses;
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Application.Abstractions.Messaging;
@@ -32,8 +33,14 @@ public sealed class GetHotelDetailsQueryHandler(IAppDbContext context)
                     .OrderBy(amenity => amenity.Name)
                     .Select(amenity => amenity.Name)
                     .ToList(),
+                hotel.HotelImages
+                    .OrderBy(image => image.Id)
+                    .Select(image => new ImageResponse(image.Id, image.ImageUrl))
+                    .ToList(),
                 context.Reviews.Where(r => r.HotelId == hotel.Id).Average(r => (double?)r.Rating),
                 context.Reviews.Count(r => r.HotelId == hotel.Id)))
+            // Two collections (amenities + images) in one query would multiply rows; split them.
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         return hotel is null

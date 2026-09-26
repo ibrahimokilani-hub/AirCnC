@@ -1,4 +1,5 @@
-﻿using HotelBooking.Contracts.RoomTypes;
+﻿using HotelBooking.Contracts.Common;
+using HotelBooking.Contracts.RoomTypes;
 using HotelBooking.Contracts.RoomTypes.Responses;
 using HotelBooking.Core.Application.Abstractions;
 using HotelBooking.Core.Application.Abstractions.Messaging;
@@ -31,7 +32,12 @@ public sealed class GetRoomTypesQueryHandler(IAppDbContext context, IHotelOwners
                 roomType.Description,
                 roomType.PricePerNight,
                 roomType.MaxAdults,
-                roomType.MaxChildren))
+                roomType.MaxChildren,
+                roomType.RoomTypeImages
+                    .OrderBy(image => image.Id)
+                    .Select(image => new ImageResponse(image.Id, image.ImageUrl))
+                    .ToList()))
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         return Result<IReadOnlyList<RoomTypeResponse>>.Success(roomTypes);

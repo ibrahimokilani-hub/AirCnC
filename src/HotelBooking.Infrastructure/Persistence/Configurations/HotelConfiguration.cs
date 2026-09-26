@@ -47,6 +47,11 @@ public sealed class HotelConfiguration : IEntityTypeConfiguration<Hotel>
                 join => join.HasKey("HotelId", "AmenityId"));
 
 
+        builder.HasMany(hotel => hotel.HotelImages)
+            .WithOne()
+            .HasForeignKey(image => image.HotelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(hotel => hotel.Name);
         builder.HasIndex(hotel => hotel.StarRating);
     }

@@ -15,6 +15,7 @@ public sealed class Hotel : AuditableEntity
     private readonly List<Room> _rooms = [];
     private readonly List<Amenity> _amenities = [];
     private readonly List<Discount> _discounts = [];
+    private readonly List<HotelImage> _hotelImages = [];
 
     private Hotel(
         int cityId,
@@ -68,6 +69,7 @@ public sealed class Hotel : AuditableEntity
     public IReadOnlyCollection<Room> Rooms => _rooms;
     public IReadOnlyCollection<Amenity> Amenities => _amenities;
     public IReadOnlyCollection<Discount> Discounts => _discounts;
+    public IReadOnlyCollection<HotelImage> HotelImages => _hotelImages;
 
     public Discount AddDiscount(string name, DiscountType discountType, decimal value, DateOnly startsAt, DateOnly endsAt, bool isActive)
     {
@@ -75,6 +77,15 @@ public sealed class Hotel : AuditableEntity
 
         _discounts.Add(discount);
         return discount;
+    }
+
+    /// <summary>Adds one image to the hotel's gallery. The single HotelImageUrl stays the cover.</summary>
+    public HotelImage AddImage(string imageUrl)
+    {
+        var image = HotelImage.Create(Id, imageUrl);
+
+        _hotelImages.Add(image);
+        return image;
     }
 
     public void SetAmenities(IEnumerable<Amenity> amenities)
