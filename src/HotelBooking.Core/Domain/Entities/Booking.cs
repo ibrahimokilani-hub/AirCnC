@@ -65,6 +65,16 @@ public sealed class Booking : Entity
             string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
             createdAtUtc);
     }
+    
+    public Result<Review> WriteReview(string reviewerName, int rating, string comment, DateOnly today, DateTime nowUtc)
+    {
+        if (_items.Max(item => item.CheckOut) > today)
+        {
+            return Result<Review>.Failure(Error.Conflict("Booking.StayNotFinished", "You can review this hotel once your stay is over."));
+        }
+
+        return Result<Review>.Success(Review.Create(HotelId, UserId, Id, reviewerName, rating, comment, nowUtc));
+    }
 
     public BookingItem AddItem(int roomId, DateRange stay, int adults, int children, decimal pricePerNight)
     {

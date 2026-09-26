@@ -40,12 +40,17 @@ public sealed class GetHotelDetailsQueryHandler(IAppDbContext context)
                         attraction.Latitude,
                         attraction.Longitude,
                         attraction.DistanceMeters))
-                    .ToList()))
+                    .ToList(),
+                context.Reviews.Where(r => r.HotelId == hotel.Id).Average(r => (double?)r.Rating),
+                context.Reviews.Count(r => r.HotelId == hotel.Id)))
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         return hotel is null
             ? Result<HotelDetailsResponse>.Failure(HotelErrors.NotFound(query.Id))
-            : Result<HotelDetailsResponse>.Success(hotel);
+            : Result<HotelDetailsResponse>.Success(hotel with
+            {
+                AverageRating = hotel.AverageRating is { } averageRating? Math.Round(averageRating, 1): null
+            });
     }
 }

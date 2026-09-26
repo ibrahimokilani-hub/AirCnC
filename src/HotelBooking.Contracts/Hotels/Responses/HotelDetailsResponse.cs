@@ -12,7 +12,9 @@ public sealed record HotelDetailsResponse(
     decimal Latitude,
     decimal Longitude,
     IReadOnlyList<string> Amenities,
-    IReadOnlyList<NearbyAttractionResponse> NearbyAttractions);
+    IReadOnlyList<NearbyAttractionResponse> NearbyAttractions,
+    double? AverageRating,
+    int ReviewsCount);
 
 public sealed record NearbyAttractionResponse(
     int Id,

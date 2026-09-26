@@ -2,10 +2,12 @@
 using HotelBooking.Contracts.Bookings.Requests;
 using HotelBooking.Contracts.Bookings.Responses;
 using HotelBooking.Contracts.Common;
+using HotelBooking.Contracts.Reviews.Requests;
 using HotelBooking.Core.Application.Abstractions.Messaging;
 using HotelBooking.Core.Application.Features.Bookings.Commands.Checkout;
 using HotelBooking.Core.Application.Features.Bookings.Queries.GetBookingConfirmation;
 using HotelBooking.Core.Application.Features.Bookings.Queries.GetMyBookings;
+using HotelBooking.Core.Application.Features.Reviews.Commands.WriteReview;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +17,8 @@ namespace HotelBooking.Api.Controllers;
 [Route("api/v1/bookings")]
 [Tags("Bookings")]
 public sealed class BookingsController(
-    ICommandHandler<CheckoutCommand, CheckoutResponse> checkout, 
+    ICommandHandler<CheckoutCommand, CheckoutResponse> checkout,
+    ICommandHandler<WriteReviewCommand, int> writeReview,
     IQueryHandler<GetBookingConfirmationQuery, BookingConfirmationResponse> getConfirmation,
     IQueryHandler<GetMyBookingsQuery, PagedResult<MyBookingItem>> getMyBookings)
     : ApiController
@@ -64,11 +67,33 @@ public sealed class BookingsController(
             return HandleFailure(result.Error!);
         }
 
-        // 201 means THIS request created it. A retry did not, so it gets 200 with the same
-        // booking: a client counting 201s can tell "Booked!" from "You already booked this".
         return result.Value.IsNew
             ? StatusCode(StatusCodes.Status201Created, new ApiResponse<CheckoutResponse>(result.Value))
             : Ok(new ApiResponse<CheckoutResponse>(result.Value));
+    }
+    
+    /// <summary>Reviews the hotel of one of my finished stays. One review per booking.</summary>
+    /// <remarks>
+    /// Under the booking, not POST /hotels/{id}/reviews: the booking is what proves I
+    /// stayed there, and it already knows the hotel.
+    /// </remarks>
+    /// <response code="201">Written. "data" holds the review id.</response>
+    /// <response code="400">Rating not 1-5, or an empty or too long comment.</response>
+    /// <response code="404">No such booking, or it isn't mine.</response>
+    /// <response code="409">Already reviewed, cancelled, or the stay isn't over yet.</response>
+    [HttpPost("{id:int:min(1)}/review")]
+    [ProducesResponseType<ApiResponse<IdResponse>>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> WriteReview(int id, [FromBody] ReviewRequest request, CancellationToken cancellationToken)
+    {
+        var result = await writeReview.HandleAsync(new WriteReviewCommand(id, request.Rating, request.Comment), cancellationToken);
+
+        // 201 without a Location header: there's no "GET one review" endpoint to point at.
+        return result.IsFailure
+            ? HandleFailure(result.Error!)
+            : StatusCode(StatusCodes.Status201Created, new ApiResponse<IdResponse>(new IdResponse(result.Value)));
     }
 
     [HttpGet("{id:int:min(1)}/confirmation")]

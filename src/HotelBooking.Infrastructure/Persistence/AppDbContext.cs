@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<NearbyAttraction> NearbyAttractions => Set<NearbyAttraction>();
     public DbSet<Discount> Discounts => Set<Discount>();
+    public DbSet<Review> Reviews => Set<Review>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
