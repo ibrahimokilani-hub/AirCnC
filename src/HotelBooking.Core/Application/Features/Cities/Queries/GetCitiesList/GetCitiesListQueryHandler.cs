@@ -14,7 +14,7 @@ namespace HotelBooking.Core.Application.Features.Cities.Queries.GetCitiesList;
 public sealed record GetCitiesListQueryHandler(
     IAppDbContext context,
     IValidator<GetCitiesListQuery> validator
-    ): IQueryHandler<GetCitiesListQuery, PagedResult<CityListItem>>
+    ) : IQueryHandler<GetCitiesListQuery, PagedResult<CityListItem>>
 {
     public async Task<Result<PagedResult<CityListItem>>> HandleAsync(
         GetCitiesListQuery query,
@@ -29,19 +29,20 @@ public sealed record GetCitiesListQueryHandler(
         }
 
         IQueryable<City> cities = context.Cities.AsNoTracking();
-        
+
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var search = query.Search.Trim();
             cities = cities.Where(city => city.Name.Contains(search) || city.Country.Contains(search) || city.PostOffice.Contains(search));
         }
-        
+
         var page = await Sort(cities, query.SortBy, query.SortDirection)
             .Select(city => new CityListItem(
                 city.Id,
                 city.Name,
                 city.Country,
                 city.PostOffice,
+                city.CityImageUrl,
                 city.Hotels.Count,
                 city.CreatedAtUtc,
                 city.UpdatedAtUtc))

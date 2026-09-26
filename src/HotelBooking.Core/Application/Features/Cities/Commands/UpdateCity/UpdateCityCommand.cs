@@ -2,4 +2,4 @@
 
 namespace HotelBooking.Core.Application.Features.Cities.Commands.UpdateCity;
 
-public sealed record UpdateCityCommand(int Id, string Name, string Country, string PostOffice) : ICommand;
+public sealed record UpdateCityCommand(int Id, string Name, string Country, string PostOffice, string? CityImageUrl) : ICommand;

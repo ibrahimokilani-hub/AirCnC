@@ -5,6 +5,7 @@ public sealed record CityListItem(
     string Name,
     string Country,
     string PostOffice,
+    string? CityImageUrl,
     int HotelsCount,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);

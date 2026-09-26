@@ -19,14 +19,15 @@ public sealed class GetCityByIdQueryHandler(IAppDbContext context) : IQueryHandl
                 city.Id,
                 city.Name,
                 city.Country,
-                city.PostOffice
+                city.PostOffice,
+                city.CityImageUrl
             ))
             .FirstOrDefaultAsync(cancellationToken);
         if (city is null)
         {
             return Result<CityResponse>.Failure(CityErrors.NotFound(query.Id));
         }
-        
+
         return Result<CityResponse>.Success(city);
 
     }

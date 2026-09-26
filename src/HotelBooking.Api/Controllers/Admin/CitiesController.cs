@@ -58,7 +58,7 @@ public sealed class CitiesController(
         [FromBody] CreateCityRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new CreateCityCommand(request.Name, request.Country, request.PostOffice);
+        var command = new CreateCityCommand(request.Name, request.Country, request.PostOffice, request.CityImageUrl);
 
         var result = await createCity.HandleAsync(command, cancellationToken);
 
@@ -104,7 +104,7 @@ public sealed class CitiesController(
         [FromBody] UpdateCityRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateCityCommand(id, request.Name, request.Country, request.PostOffice);
+        var command = new UpdateCityCommand(id, request.Name, request.Country, request.PostOffice, request.CityImageUrl);
 
         var result = await updateCity.HandleAsync(command, cancellationToken);
 

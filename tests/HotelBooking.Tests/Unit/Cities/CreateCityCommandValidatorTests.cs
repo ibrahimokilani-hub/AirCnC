@@ -7,7 +7,7 @@ public sealed class CreateCityCommandValidatorTests
 {
     private readonly CreateCityCommandValidator _validator = new();
 
-    private static CreateCityCommand Valid() => new("Jenin", "Palestine", "P100");
+    private static CreateCityCommand Valid() => new("Jenin", "Palestine", "P100","");
 
     private string[] FailedProperties(CreateCityCommand command) =>
         _validator.Validate(command).Errors.Select(error => error.PropertyName).Distinct().ToArray();

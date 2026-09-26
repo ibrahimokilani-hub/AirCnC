@@ -34,7 +34,7 @@ public sealed class CreateCityCommandHandler(
             return Result<int>.Failure(CityErrors.AlreadyExists(name, country));
         }
 
-        var city = City.Create(name, country, command.PostOffice);
+        var city = City.Create(name, country, command.PostOffice, command.CityImageUrl);
 
         context.Cities.Add(city);
         await context.SaveChangesAsync(cancellationToken);

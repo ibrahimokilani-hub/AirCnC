@@ -23,13 +23,13 @@ public sealed class UpdateCityCommandHandler(
             return Result.Failure(validation.ToValidationError());
         }
 
-       var city = context.Cities.FirstOrDefault(c => c.Id == command.Id);
-        
+        var city = context.Cities.FirstOrDefault(c => c.Id == command.Id);
+
         if (city is null)
         {
             return Result.Failure(CityErrors.NotFound(command.Id));
         }
-        
+
         var name = command.Name.Trim();
         var country = command.Country.Trim();
 
@@ -43,8 +43,8 @@ public sealed class UpdateCityCommandHandler(
             return Result.Failure(CityErrors.AlreadyExists(name, country));
         }
 
-        city.Update(name, country, command.PostOffice);
-        
+        city.Update(name, country, command.PostOffice, command.CityImageUrl);
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
