@@ -8,7 +8,7 @@ public sealed class RoomType : AuditableEntity
     public const int DescriptionMaxLength = 1000;
     public const int MaxGuestsPerRoom = 10;
 
-    private RoomType(int hotelId, string name, string description, decimal pricePerNight, int maxAdults, int maxChildren)
+    private RoomType(int hotelId, string name, string description, decimal pricePerNight, int maxAdults, int maxChildren, string? roomTypeImageUrl = null)
     {
         HotelId = hotelId;
         Name = name;
@@ -16,6 +16,7 @@ public sealed class RoomType : AuditableEntity
         PricePerNight = pricePerNight;
         MaxAdults = maxAdults;
         MaxChildren = maxChildren;
+        RoomTypeImageUrl = roomTypeImageUrl?.Trim();
     }
 
     public int HotelId { get; private set; }
@@ -29,6 +30,7 @@ public sealed class RoomType : AuditableEntity
     public int MaxAdults { get; private set; }
 
     public int MaxChildren { get; private set; }
+    public string? RoomTypeImageUrl { get; private set; }
 
     public static RoomType Create(
         int hotelId,
@@ -36,15 +38,15 @@ public sealed class RoomType : AuditableEntity
         string description,
         decimal pricePerNight,
         int maxAdults,
-        int maxChildren)
+        int maxChildren, string? roomTypeImageUrl = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hotelId);
         Guard(name, pricePerNight, maxAdults, maxChildren);
 
-        return new RoomType(hotelId, name.Trim(), description.Trim(), pricePerNight, maxAdults, maxChildren);
+        return new RoomType(hotelId, name.Trim(), description.Trim(), pricePerNight, maxAdults, maxChildren, roomTypeImageUrl?.Trim());
     }
 
-    public void Update(string name, string description, decimal pricePerNight, int maxAdults, int maxChildren)
+    public void Update(string name, string description, decimal pricePerNight, int maxAdults, int maxChildren, string? roomTypeImageUrl = null)
     {
         Guard(name, pricePerNight, maxAdults, maxChildren);
 
@@ -53,6 +55,7 @@ public sealed class RoomType : AuditableEntity
         PricePerNight = pricePerNight;
         MaxAdults = maxAdults;
         MaxChildren = maxChildren;
+        RoomTypeImageUrl = roomTypeImageUrl?.Trim();
     }
 
     public bool Fits(int adults, int children) => adults <= MaxAdults && children <= MaxChildren;

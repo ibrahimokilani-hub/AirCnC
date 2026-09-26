@@ -11,7 +11,7 @@ public sealed class Hotel : AuditableEntity
     public const int AddressMaxLength = 300;
     public const int MinStars = 1;
     public const int MaxStars = 5;
-    
+
     private readonly List<RoomType> _roomTypes = [];
     private readonly List<Room> _rooms = [];
     private readonly List<Amenity> _amenities = [];
@@ -27,7 +27,8 @@ public sealed class Hotel : AuditableEntity
         HotelType hotelType,
         string address,
         decimal latitude,
-        decimal longitude)
+        decimal longitude,
+        string? hotelImageUrl = null)
     {
         CityId = cityId;
         OwnerId = ownerId;
@@ -38,12 +39,13 @@ public sealed class Hotel : AuditableEntity
         Address = address;
         Latitude = latitude;
         Longitude = longitude;
+        HotelImageUrl = hotelImageUrl?.Trim();
     }
 
     public int CityId { get; private set; }
 
     public City City { get; private set; } = null!;
-    
+
     public int OwnerId { get; private set; }
 
     /// <summary>Loaded only when a query asks for it, like City.</summary>
@@ -62,13 +64,14 @@ public sealed class Hotel : AuditableEntity
     public decimal Latitude { get; private set; }
 
     public decimal Longitude { get; private set; }
-    
+    public string? HotelImageUrl { get; private set; }
+
     public IReadOnlyCollection<RoomType> RoomTypes => _roomTypes;
     public IReadOnlyCollection<Room> Rooms => _rooms;
     public IReadOnlyCollection<Amenity> Amenities => _amenities;
     public IReadOnlyCollection<NearbyAttraction> NearbyAttractions => _nearbyAttractions;
     public IReadOnlyCollection<Discount> Discounts => _discounts;
-    
+
     public Discount AddDiscount(string name, DiscountType discountType, decimal value, DateOnly startsAt, DateOnly endsAt, bool isActive)
     {
         var discount = Discount.Create(name, discountType, value, startsAt, endsAt, isActive);
@@ -77,8 +80,8 @@ public sealed class Hotel : AuditableEntity
         return discount;
     }
 
-    
-    public NearbyAttraction AddNearbyAttraction(string name, string category, decimal latitude, decimal longitude)
+
+    public NearbyAttraction AddNearbyAttraction(string name, string category, decimal latitude, decimal longitude, string? attractionImageUrl = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(latitude, -90m);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(latitude, 90m);
@@ -86,12 +89,12 @@ public sealed class Hotel : AuditableEntity
         ArgumentOutOfRangeException.ThrowIfGreaterThan(longitude, 180m);
 
         var distance = GeoDistance.Meters(Latitude, Longitude, latitude, longitude);
-        var attraction = NearbyAttraction.Create(name, category, latitude, longitude, distance);
+        var attraction = NearbyAttraction.Create(name, category, latitude, longitude, distance, attractionImageUrl?.Trim());
 
         _nearbyAttractions.Add(attraction);
         return attraction;
     }
-    
+
     public void SetAmenities(IEnumerable<Amenity> amenities)
     {
         _amenities.Clear();
@@ -108,7 +111,8 @@ public sealed class Hotel : AuditableEntity
         HotelType hotelType,
         string address,
         decimal latitude,
-        decimal longitude)
+        decimal longitude,
+        string? hotelImageUrl = null)
     {
         Guard(cityId, ownerId, name, address, starRating, latitude, longitude);
 
@@ -121,7 +125,8 @@ public sealed class Hotel : AuditableEntity
             hotelType,
             address.Trim(),
             latitude,
-            longitude);
+            longitude,
+            hotelImageUrl?.Trim());
     }
 
     /// <summary>OwnerId is deliberately not a parameter: ownership does not change here.</summary>
@@ -133,7 +138,8 @@ public sealed class Hotel : AuditableEntity
         HotelType hotelType,
         string address,
         decimal latitude,
-        decimal longitude)
+        decimal longitude,
+        string? hotelImageUrl = null)
     {
         Guard(cityId, OwnerId, name, address, starRating, latitude, longitude);
 
@@ -145,6 +151,7 @@ public sealed class Hotel : AuditableEntity
         Address = address.Trim();
         Latitude = latitude;
         Longitude = longitude;
+        HotelImageUrl = hotelImageUrl?.Trim();
     }
 
     private static void Guard(

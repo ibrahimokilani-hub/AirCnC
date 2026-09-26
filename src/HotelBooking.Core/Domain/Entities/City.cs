@@ -7,32 +7,34 @@ public class City : AuditableEntity
     public const int NameMaxLength = 70;
     public const int CountryMaxLength = 40;
     public const int PostOfficeMaxLength = 15;
-    
+
     private readonly List<Hotel> _hotels = [];
-    
-    private City(string name, string country, string postOffice)
+
+    private City(string name, string country, string postOffice, string? cityImageUrl = null)
     {
         Name = name;
         Country = country;
         PostOffice = postOffice;
+        CityImageUrl = cityImageUrl;
     }
-    
+
     public string Name { get; set; }
     public string Country { get; set; }
     public string PostOffice { get; set; }
-    
+    public string? CityImageUrl { get; set; }
+
     public IReadOnlyCollection<Hotel> Hotels => _hotels;
-    
-    public static City Create(string name, string country, string postOffice)
+
+    public static City Create(string name, string country, string postOffice, string? cityImageUrl = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(country);
         ArgumentException.ThrowIfNullOrWhiteSpace(postOffice);
 
-        return new City(name.Trim(), country.Trim(), postOffice.Trim());
+        return new City(name.Trim(), country.Trim(), postOffice.Trim(), cityImageUrl?.Trim());
     }
 
-    public void Update(string name, string country, string postOffice)
+    public void Update(string name, string country, string postOffice, string? cityImageUrl = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(country);
@@ -41,5 +43,6 @@ public class City : AuditableEntity
         Name = name.Trim();
         Country = country.Trim();
         PostOffice = postOffice.Trim();
+        CityImageUrl = cityImageUrl?.Trim();
     }
 }
