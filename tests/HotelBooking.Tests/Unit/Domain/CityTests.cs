@@ -45,4 +45,21 @@ public sealed class CityTests
         Assert.Throws<ArgumentException>( () => city.Update("", "Palestine", "P100"));
         Assert.Equal("Jenin", city.Name);
     } 
+
+    [Theory]
+    [InlineData(" http://img/jenin.png ", "http://img/jenin.png")]
+    [InlineData(null, null)]
+    public void Create_ImageUrl_IsTrimmedOrNull(string? imageUrl, string? expected) =>
+        Assert.Equal(expected, City.Create("Jenin", "Palestine", "P100", imageUrl).CityImageUrl);
+
+    /// <summary>The PUT replaces every field, so an update with no image means "remove it".</summary>
+    [Fact]
+    public void Update_WithoutAnImageUrl_ClearsIt()
+    {
+        var city = City.Create("Jenin", "Palestine", "P100", "http://img/jenin.png");
+
+        city.Update("Jenin", "Palestine", "P100");
+
+        Assert.Null(city.CityImageUrl);
+    }
 }
