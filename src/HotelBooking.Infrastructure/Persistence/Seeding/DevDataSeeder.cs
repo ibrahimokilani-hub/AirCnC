@@ -61,6 +61,40 @@ public sealed class DevDataSeeder(
             ["Ramallah Palace"] = ("15 Off Your Stay", DiscountType.FixedAmount, 15m, 14)
         };
 
+    /// <summary>
+    /// Free Unsplash photos that give the dev data real pictures. Stored as plain URLs because
+    /// ImageUrl is just a string today; Phase 2 swaps these for Cloudinary uploads. Keyed by
+    /// hotel name: one cover (Hotel.HotelImageUrl) plus a couple of gallery shots.
+    /// </summary>
+    private static readonly Dictionary<string, (string Cover, string[] Gallery)> HotelImagery =
+        new()
+        {
+            ["Nablus Grand Hotel"] = (
+                "photo-1566073771259-6a8506099945",
+                ["photo-1551882547-ff40c63fe5fa", "photo-1564501049412-61c2a3083791"]),
+            ["Olive Garden Inn"] = (
+                "photo-1571003123894-1f0594d2b5d9",
+                ["photo-1582719478250-c89cae4dc85b", "photo-1520250497591-112f2f40a3f4"]),
+            ["Ramallah Palace"] = (
+                "photo-1542314831-068cd1dbfeeb",
+                ["photo-1455587734955-081b22074882", "photo-1445019980597-93fa8acb246c"]),
+            ["Amman Royal Hotel"] = (
+                "photo-1611892440504-42a792e24d32",
+                ["photo-1566073771259-6a8506099945", "photo-1551882547-ff40c63fe5fa"])
+        };
+
+    /// <summary>Gallery photos per room-type name. Every hotel's Standard/Deluxe reuse these.</summary>
+    private static readonly Dictionary<string, string[]> RoomImagery =
+        new()
+        {
+            ["Standard"] = ["photo-1618773928121-c32242e63f39", "photo-1590490360182-c33d57733427"],
+            ["Deluxe"] = ["photo-1560448204-e02f11c3d0e2", "photo-1522708323590-d24dbb6b0267"]
+        };
+
+    /// <summary>Unsplash serves any size from one id; these params keep the files web-friendly.</summary>
+    private static string ImageUrl(string photoId) =>
+        $"https://images.unsplash.com/{photoId}?auto=format&fit=crop&w=1200&q=80";
+
     public async Task SeedAsync(
         CancellationToken cancellationToken = default)
     {
@@ -69,6 +103,39 @@ public sealed class DevDataSeeder(
         await SeedAmenitiesAsync(cancellationToken);
         await SeedHotelsAsync(cancellationToken);
         await SeedNearbyAttractionsAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Hard-deletes every row while leaving the schema and migration history in place, so a
+    /// following SeedAsync starts from a clean database. Children go before parents, so the
+    /// Restrict foreign keys never block, and IgnoreQueryFilters means even soft-deleted rows
+    /// go. Uses ExecuteDelete (one DELETE per table, no entities loaded). Dev only — the
+    /// --reset startup path is the only caller.
+    /// </summary>
+    public async Task ClearAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // The Hotel<->Amenity join has no entity of its own, so it is cleared with raw SQL.
+        await context.Database.ExecuteSqlRawAsync(
+            "DELETE FROM [HotelAmenities];",
+            cancellationToken);
+
+        await context.BookingItems.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Reviews.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Bookings.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.RefreshTokens.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.RoomTypeImages.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.HotelImages.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Discounts.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Rooms.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.RoomTypes.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.NearbyAttractions.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Hotels.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Amenities.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Cities.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+        await context.Users.IgnoreQueryFilters().ExecuteDeleteAsync(cancellationToken);
+
+        logger.LogInformation("Cleared all data from the database.");
     }
 
     private async Task SeedUsersAsync(
@@ -275,16 +342,25 @@ public sealed class DevDataSeeder(
 
         if (hotel is null)
         {
+            var imagery = HotelImagery.GetValueOrDefault(name);
+            var hotelType = Random.Shared.Next(3) switch
+            {
+                0 => HotelType.Luxury,
+                1 => HotelType.Boutique,
+                _ => HotelType.Budget
+            };
+            
             hotel = Hotel.Create(
                 city.Id,
                 ownerId,
                 name,
                 description,
                 4,
-                HotelType.Luxury,
+                hotelType,
                 $"{city.Name} City Centre",
                 latitude,
-                longitude);
+                longitude,
+                imagery.Cover is null ? null : ImageUrl(imagery.Cover));
 
             hotel.SetAmenities(
             [
@@ -297,7 +373,19 @@ public sealed class DevDataSeeder(
 
             context.Hotels.Add(hotel);
 
+            // Save first so the hotel has an Id: HotelImage.Create rejects a zero HotelId, and
+            // the gallery rows carry that Id as their foreign key.
             await context.SaveChangesAsync(cancellationToken);
+
+            if (imagery.Gallery is not null)
+            {
+                foreach (var photoId in imagery.Gallery)
+                {
+                    hotel.AddImage(ImageUrl(photoId));
+                }
+
+                await context.SaveChangesAsync(cancellationToken);
+            }
 
             logger.LogInformation(
                 "Seeded hotel {HotelName}",
@@ -409,7 +497,18 @@ public sealed class DevDataSeeder(
 
             context.RoomTypes.Add(roomType);
 
+            // Save first: RoomTypeImage.Create needs the generated RoomType Id.
             await context.SaveChangesAsync(cancellationToken);
+
+            if (RoomImagery.TryGetValue(name, out var photoIds))
+            {
+                foreach (var photoId in photoIds)
+                {
+                    roomType.AddImage(ImageUrl(photoId));
+                }
+
+                await context.SaveChangesAsync(cancellationToken);
+            }
 
             logger.LogInformation(
                 "Seeded room type {RoomType} for {Hotel}",
