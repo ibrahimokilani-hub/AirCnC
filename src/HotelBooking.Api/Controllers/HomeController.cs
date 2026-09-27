@@ -1,8 +1,10 @@
-﻿using HotelBooking.Contracts.Common;
+﻿using HotelBooking.Contracts.Cities.Responses;
+using HotelBooking.Contracts.Common;
 using HotelBooking.Contracts.Home;
 using HotelBooking.Contracts.Home.Responses;
 using HotelBooking.Contracts.Reviews.Responses;
 using HotelBooking.Core.Application.Abstractions.Messaging;
+using HotelBooking.Core.Application.Features.Cities.Queries.GetPopularCities;
 using HotelBooking.Core.Application.Features.Home.Discounts.Queries.GetFeaturedDeals;
 using HotelBooking.Core.Application.Features.Reviews.Queries;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +16,9 @@ namespace HotelBooking.Api.Controllers;
 [Route("api/v1/home")]
 [Tags("Home")]
 public sealed class HomeController(
-    IQueryHandler<GetFeaturedDealsQuery, IReadOnlyList<FeaturedDealResponse>> getFeaturedDeals, IQueryHandler<GetHotelReviewsQuery, PagedResult<ReviewResponse>> getReviews)
+    IQueryHandler<GetFeaturedDealsQuery, IReadOnlyList<FeaturedDealResponse>> getFeaturedDeals,
+    IQueryHandler<GetPopularCitiesQuery, IReadOnlyList<CityBookingCountResponse>> getPopularCities,
+    IQueryHandler<GetHotelReviewsQuery, PagedResult<ReviewResponse>> getReviews)
     : ApiController
 {
     /// <summary>Up to 5 hotels with a discount today, biggest first. Cached for 5 minutes.</summary>
@@ -24,6 +28,17 @@ public sealed class HomeController(
     public async Task<IActionResult> GetFeaturedDeals(CancellationToken cancellationToken)
     {
         var result = await getFeaturedDeals.HandleAsync(new GetFeaturedDealsQuery(), cancellationToken);
+
+        return result.IsFailure ? HandleFailure(result.Error!) : OkData(result.Value);
+    }
+    
+    /// <summary>Up to 5 hotels with a discount today, biggest first. Cached for 5 minutes.</summary>
+    [AllowAnonymous]
+    [HttpGet("popular-cities")]
+    [ProducesResponseType<ApiResponse<IReadOnlyList<CityBookingCountResponse>>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPopularCities(CancellationToken cancellationToken)
+    {
+        var result = await getPopularCities.HandleAsync(new GetPopularCitiesQuery(), cancellationToken);
 
         return result.IsFailure ? HandleFailure(result.Error!) : OkData(result.Value);
     }
