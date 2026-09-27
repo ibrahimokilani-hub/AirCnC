@@ -47,6 +47,7 @@ public sealed class GetFeaturedDealsQueryHandler(
             CityName = hotel.City.Name,
             hotel.City.Country,
             hotel.StarRating,
+            hotel.HotelImageUrl,
             FromPrice = hotel.RoomTypes.Min(roomType => roomType.PricePerNight),
             Best = hotel.Discounts
                 .Where(discount => discount.IsActive && discount.StartsAt <= today && today <= discount.EndsAt)                .OrderByDescending(discount =>
@@ -90,6 +91,7 @@ public sealed class GetFeaturedDealsQueryHandler(
                 hotel.Best.Name,
                 hotel.Best.DiscountType.ToString(),
                 hotel.Best.Value,
+                hotel.HotelImageUrl,
                 originalPrice,
                 decimal.Round(discountedPrice, 2),
                 hotel.Best.EndsAt);

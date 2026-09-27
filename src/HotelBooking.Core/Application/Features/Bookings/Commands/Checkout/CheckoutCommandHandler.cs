@@ -84,9 +84,7 @@ public class CheckoutCommandHandler(IAppDbContext context, ICurrentUser currentU
             command.IdempotencyKey,
             command.Notes,
             now);
-
-        var hotel = await context.Hotels.AsNoTracking().Where(hotel => hotel.Id == roomType.HotelId).FirstOrDefaultAsync(cancellationToken);
-
+        
         var discount = await context.Hotels
             .AsNoTracking()
             .Where(h => h.Id == booking.HotelId)

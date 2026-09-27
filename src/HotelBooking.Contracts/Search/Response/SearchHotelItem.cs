@@ -9,4 +9,4 @@ public sealed record SearchHotelItem(
     string HotelType,
     string ShortDescription,
     decimal PricePerNight,
-    int AvailableRooms);
+    int AvailableRooms, string? HotelImageUrl);

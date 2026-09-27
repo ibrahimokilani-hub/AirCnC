@@ -9,6 +9,7 @@ public sealed record FeaturedDealResponse(
     string DiscountName,
     string DiscountType,
     decimal DiscountedValue,
+    string? HotelImageUrl,
     decimal OriginalPrice,
     decimal DiscountedPrice,
     DateOnly EndsAt);

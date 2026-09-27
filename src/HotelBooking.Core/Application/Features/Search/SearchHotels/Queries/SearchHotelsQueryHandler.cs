@@ -118,7 +118,7 @@ public sealed class SearchHotelsQueryHandler(
                     ? candidate.Hotel.Description.Substring(0, ShortDescriptionLength) + "…"
                     : candidate.Hotel.Description,
                 candidate.CheapestPrice!.Value,
-                candidate.AvailableRooms))
+                candidate.AvailableRooms, candidate.Hotel.HotelImageUrl))
             .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
 
         return Result<PagedResult<SearchHotelItem>>.Success(page);
